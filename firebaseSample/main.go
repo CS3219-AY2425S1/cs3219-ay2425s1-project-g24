@@ -22,7 +22,7 @@ type PageData struct {
 func initFirestore() *firestore.Client {
 	// Use your service account key file for authentication
 	ctx := context.Background()
-	sa := option.WithCredentialsFile("cs3219-g24-firebase-adminsdk-9cm7h-703aac7306.json")
+	sa := option.WithCredentialsFile("cs3219-g24-firebase-adminsdk-9cm7h-b1675603ab.json")
 	client, err := firestore.NewClient(ctx, "cs3219-g24", sa)
 	if err != nil {
 		log.Fatalf("Failed to create Firestore client: %v", err)
@@ -33,7 +33,6 @@ func initFirestore() *firestore.Client {
 // Handler to get question data from Firestore and render the template
 func questionHandler(w http.ResponseWriter, r *http.Request) {
 	// Initialize Firestore client
-	log.Print("1")
 	client := initFirestore()
 	defer client.Close()
 
@@ -50,7 +49,6 @@ func questionHandler(w http.ResponseWriter, r *http.Request) {
 	title := dsnap.Data()["title"].(string)
 	description := dsnap.Data()["description"].(string)
 	log.Printf("Document data: %#v\n", title)
-	log.Printf("Hello World")
 
 	// Define the template
 	tmpl := template.Must(template.ParseFiles("question.html"))
@@ -76,7 +74,6 @@ func main() {
 	}
 
 	log.Printf("Server is running on http://localhost:%s", port)
-	log.Printf("2")
 	err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil)
 	if err != nil {
 		log.Fatalf("Failed to start server: %v", err)
