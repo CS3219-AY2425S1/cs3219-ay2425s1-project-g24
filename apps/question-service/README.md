@@ -1,39 +1,80 @@
-This is the frontend for the question service.
+# Question Service
 
-## Tech Stack
+## Overview
 
-- Next.js
-- TypeScript
-- Ant Design
-- SCSS
+The Question Service is built with Go, utilizing Firestore as the database and Chi as the HTTP router. It allows for basic operations such as creating, reading, updating, and deleting question records.
+
+## Features
+
+- Create new questions
+- Retrieve question information by ID
+- Update question details
+- Delete question
+
+## Technologies Used
+
+- Go (Golang)
+- Firestore (Google Cloud Firestore)
+- Chi (HTTP router)
 
 ## Getting Started
 
-First, install the dependencies:
+### Prerequisites
+
+- Go 1.16 or later
+- Google Cloud SDK
+- Firestore database setup in your Google Cloud project
+
+### Installation
+
+1. Clone the repository
+
+2. Set up your Firestore client
+
+3. Install dependencies:
 
 ```bash
-npm install -g pnpm
-
-pnpm install --frozen-lockfile
-
-# if pnpm install --frozen-lockfile fails, try running
-pnpm install
+go mod tidy
 ```
 
-Then, follow the `.env.example` file and create a `.env` file in the current directory. Replace the necessary values within.
+4. Create the `.env` file from copying the `.env.example`, and fill in the `FIREBASE_CREDENTIAL_PATH` with the path of the firebase credential JSON file.
+
+### Running the Application
+
+To start the server, run the following command:
 
 ```bash
-NEXT_PUBLIC_API_URL=http://localhost:8080
+go run main.go
 ```
 
-First, run the development server:
+The server will be available at http://localhost:8080.
+
+## Running the Application via Docker
+
+To run the application via Docker, run the following command:
 
 ```bash
-pnpm dev
+docker build -t question-service .
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+```bash
+docker run -p 8080:8080 --env-file .env -d question-service
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The server will be available at http://localhost:8080.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## API Endpoints
+
+- `POST /questions`
+- `GET /questions/{id}`
+- `GET /questions`
+- `PUT /questions/{id}`
+- `DELETE /questions/{id}`
+
+## Managing Firebase
+
+To reset and repopulate the database, run the following command:
+
+```bash
+go run main.go -populate
+```

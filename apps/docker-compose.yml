@@ -1,0 +1,42 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    networks:
+      - apps_network
+    env_file:
+      - ./frontend/.env
+    volumes:
+      - ./frontend:/frontend
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    ports:
+      - 3001:3001
+    networks:
+      - apps_network
+    env_file:
+      - ./user-service/.env
+    volumes:
+      - ./user-service:/user-service
+
+  question-service:
+    build:
+      context: ./question-service
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    env_file:
+      - ./question-service/.env
+    networks:
+      - apps_network
+    volumes:
+      - ./question-service:/question-service
+
+networks:
+  apps_network:
