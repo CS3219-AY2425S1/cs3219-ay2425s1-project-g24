@@ -4,7 +4,13 @@ import './styles.scss';
 import { handleReselectMatchOptions, handleRetryMatch } from '../handlers';
 import { formatTime } from '@/utils/DateTime';
 
-const MatchNotFoundContent: React.FC = () => {
+const MatchNotFoundContent: React.FC<{
+    retry(): void,
+    reselect(): void,
+    timedOutIn: number,
+}> = ({
+    retry, reselect, timedOutIn
+}) => {
     return (
         <div className="joined-match-content">
             <div className="dissatisfied-icon-container">
@@ -20,15 +26,15 @@ const MatchNotFoundContent: React.FC = () => {
             </div>
             <div className="match-status-label">Match Not Found!</div>
             <div className="match-status-message">
-                Sorry, we could not find a match after {formatTime(83)}
+                Sorry, we could not find a match after {formatTime(timedOutIn)}
             </div>
-            <button className="retry-match-button"
-                onClick={() => handleRetryMatch()}
+            {/* <button className="retry-match-button"
+                onClick={retry}
             >
                 Retry
-            </button>
+            </button> */}
             <button className="reselect-match-options-button"
-                onClick={() => handleReselectMatchOptions()}
+                onClick={reselect}
             >
                 Reselect Options
             </button>

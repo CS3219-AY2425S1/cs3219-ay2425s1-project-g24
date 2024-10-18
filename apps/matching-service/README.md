@@ -27,8 +27,15 @@ go mod tidy
 - `PORT`: Specifies the port for the WebSocket server. Default is `8081`.
 - `JWT_SECRET`: The secret key used to verify JWT tokens.
 - `MATCH_TIMEOUT`: The time in seconds to wait for a match before timing out.
+- `REDIS_URL`: The URL for the Redis server. Default is `localhost:6379`.
 
-4. Start the WebSocket server:
+4. Start a local redis server:
+
+```bash
+docker run -d -p 6379:6379 redis
+```
+
+5. Start the WebSocket server:
 
 ```bash
 go run main.go
@@ -68,7 +75,9 @@ Client sends matching parameters:
 {
   "type": "match_request",
   "topics": ["Algorithms", "Arrays"],
-  "difficulties": ["Easy", "Medium"]
+  "difficulties": ["Easy", "Medium"],
+  "username": "Jane Doe",
+  "email": "janedoe@gmail.com" // possible to change to user ID in mongodb
 }
 ```
 
@@ -77,9 +86,9 @@ Server response on successful match:
 ```json
 {
   "type": "match_found",
-  "matchID": 67890,
-  "partnerID": 54321,
-  "partnerName": "John Doe"
+  "matchID": "aa41c004e589642402215c2c0a3a165a",
+  "partnerID": 54321, // currently identifying via partner's websocket port --> change to user ID in mongodb
+  "partnerName": "John Doe" // partner username
 }
 ```
 
@@ -99,6 +108,8 @@ If the server encounters an issue during the WebSocket connection or processing,
 Utilize `./tests/websocket-test.html` for a basic debugging interface of the matching service. This HTML file provides an interactive way to test the WebSocket connection, send matching requests, and observe responses from the server.
 
 Make sure to open the HTML file in a web browser while the WebSocket server is running to perform your tests.
+
+You can open one instance of the HTML file in multiple tabs to simulate multiple clients connecting to the server. (In the future: ensure that only one connection is allowed per user)
 
 ## Docker Support
 

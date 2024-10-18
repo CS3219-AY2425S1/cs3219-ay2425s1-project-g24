@@ -69,6 +69,7 @@ func readMatchRequest(ws *websocket.Conn) (models.MatchRequest, error) {
 	if err := ws.ReadJSON(&matchRequest); err != nil {
 		return matchRequest, err
 	}
+	matchRequest.Port = ws.RemoteAddr().String()
 	log.Printf("Received match request: %v", matchRequest)
 	return matchRequest, nil
 }

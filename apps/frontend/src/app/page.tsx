@@ -20,7 +20,7 @@ const HomePage = () => {
     <Layout className="layout">
       <Header selectedKey={undefined} />
       <Content className="content">
-        <MatchingModal isOpen={matchingModalOpen} onClose={closeMatchingModal}/>
+        <MatchingModal isOpen={matchingModalOpen} close={closeMatchingModal}/>
         <div className="home-content-card">
           <div className="left-panel">
             <div className="logo-container">

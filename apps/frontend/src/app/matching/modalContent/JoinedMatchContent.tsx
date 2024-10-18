@@ -10,7 +10,12 @@ import './styles.scss';
 import { handleCancelMatch } from '../handlers';
 import { formatTime } from '@/utils/DateTime';
 
-const JoinedMatchContent: React.FC = () => {
+
+interface Props {
+    cancel(): void
+}
+
+const JoinedMatchContent: React.FC<Props> = ({cancel}) => {
     const matchAlreadyJoined = () => {
         throw new Error('Match already joined.');
     }
@@ -36,12 +41,11 @@ const JoinedMatchContent: React.FC = () => {
             </div>
             <button className="joined-match-deactivated-button" 
                 disabled
-                onClick={() => matchAlreadyJoined()}
             >
                 Joined
             </button>
             <button className="cancel-match-button"
-                onClick={() => handleCancelMatch()}
+                onClick={cancel}
             >
                 Cancel
             </button>

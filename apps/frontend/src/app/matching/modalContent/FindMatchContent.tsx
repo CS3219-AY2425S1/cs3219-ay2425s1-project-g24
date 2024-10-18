@@ -11,7 +11,8 @@ import {
 import type { SelectProps } from 'antd';
 import 'typeface-montserrat';
 import './styles.scss';
-import { handleFindMatch } from '../handlers';
+import { ValidateUser } from "@/app/services/user"
+import { type MatchRequestParams } from '@/app/services/use-matching';
 
 interface DifficultySelectorProps {
     className?: string;
@@ -25,9 +26,14 @@ interface TopicSelectorProps {
     onChange: (topics: string[]) => void;
 }
 
-const FindMatchContent: React.FC = () => {
+interface Props {
+    beginMatch(request: MatchRequestParams): void
+}
+
+const FindMatchContent: React.FC<Props> = ({ beginMatch }) => {
     const [selectedDifficulties, setSelectedDifficulties] = useState<string[]>([]);
     const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleDifficultyChange = (difficulties: string[]) => {
         setSelectedDifficulties(difficulties);
@@ -55,7 +61,18 @@ const FindMatchContent: React.FC = () => {
                 />          
             </div>
             <button className="find-match-button"
-                onClick={handleFindMatch}
+                onClick={async () => {
+                    setIsLoading(true);
+                    const user = await ValidateUser();
+                    beginMatch({
+                        email: user.data.email,
+                        username: user.data.username,
+                        type: "match_request",
+                        difficulties: selectedDifficulties,
+                        topics: selectedTopics,
+                    })
+                }}
+                disabled={isLoading}
             >
                 Find Match
             </button>
@@ -77,8 +94,8 @@ const DifficultySelector: React.FC<DifficultySelectorProps> = ({ selectedDifficu
                 <Tag.CheckableTag
                     className={`difficulty-tag ${difficultyOption.value}-tag`}
                     key={difficultyOption.value}
-                    checked={selectedDifficulties.includes(difficultyOption.value)}
-                    onChange={() => handleChange(difficultyOption.value)}
+                    checked={selectedDifficulties.includes(difficultyOption.label)}
+                    onChange={() => handleChange(difficultyOption.label)}
                 >
                     {difficultyOption.label}
                 </Tag.CheckableTag>
@@ -90,11 +107,8 @@ const DifficultySelector: React.FC<DifficultySelectorProps> = ({ selectedDifficu
 const TopicSelector: React.FC<TopicSelectorProps> = ({ selectedTopics, onChange}) => {
     const topicOptions: SelectProps[] = CategoriesOption;
     
-    const handleChange = (topic: string) => {
-        const newSelectedTopics = selectedTopics.includes(topic)
-            ? selectedTopics.filter(selectedTopic => selectedTopic !== topic)
-            : [...selectedTopics, topic];
-        onChange(newSelectedTopics);
+    const handleChange = (topics: string[]) => {
+        onChange(topics);
     }
 
     return (
