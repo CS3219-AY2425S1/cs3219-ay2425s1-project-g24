@@ -1,0 +1,103 @@
+name: Run Tests
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+      - frontend-websocket-test
+  pull_request:
+    branches:
+      - main
+      - staging
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+
+      - name: Create Environment Files
+        env:
+          QUESTION_SERVICE_URL: ${{ vars.QUESTION_SERVICE_URL }}
+          USER_SERVICE_URL: ${{ vars.USER_SERVICE_URL }}
+          MATCHING_SERVICE_URL: ${{ vars.MATCHING_SERVICE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          FIREBASE_CREDENTIAL_PATH: ${{ vars.QUESTION_SERVICE_FIREBASE_CREDENTIAL_PATH }}
+          DB_CLOUD_URI: ${{ secrets.USER_SERVICE_DB_CLOUD_URI }}
+          USER_SERVICE_PORT: ${{ vars.USER_SERVICE_PORT }}
+          MATCHING_SERVICE_PORT: ${{ vars.MATCHING_SERVICE_PORT }}
+          MATCHING_SERVICE_TIMEOUT: ${{ vars.MATCHING_SERVICE_TIMEOUT }}
+          REDIS_URL: ${{ vars.REDIS_URL }}
+        run: |
+          cd ./apps/frontend
+          echo "NEXT_PUBLIC_QUESTION_SERVICE_URL=$QUESTION_SERVICE_URL" >> .env
+          echo "NEXT_PUBLIC_USER_SERVICE_URL=$USER_SERVICE_URL" >> .env
+          echo "NEXT_PUBLIC_MATCHING_SERVICE_URL=$MATCHING_SERVICE_URL" >> .env
+
+          cd ../question-service
+          echo "FIREBASE_CREDENTIAL_PATH=$FIREBASE_CREDENTIAL_PATH" >> .env
+          echo "JWT_SECRET=$JWT_SECRET" >> .env
+
+          cd ../user-service
+          echo "DB_CLOUD_URI=$DB_CLOUD_URI" >> .env
+          echo "PORT=$USER_SERVICE_PORT" >> .env
+          echo "JWT_SECRET=$JWT_SECRET" >> .env
+
+          cd ../matching-service
+          echo "PORT=$MATCHING_SERVICE_PORT" >> .env
+          echo "MATCH_TIMEOUT=$MATCHING_SERVICE_TIMEOUT" >> .env
+          echo "JWT_SECRET=$JWT_SECRET" >> .env
+          echo "REDIS_URL=$REDIS_URL" >> .env
+
+      - name: Create Database Credential Files
+        env:
+          FIREBASE_JSON: ${{ secrets.QUESTION_SERVICE_FIREBASE_CREDENTIAL }}
+          FIREBASE_CREDENTIAL_PATH: ${{ vars.QUESTION_SERVICE_FIREBASE_CREDENTIAL_PATH }}
+        run: |
+          cd ./apps/question-service
+          echo "$FIREBASE_JSON" > "./$FIREBASE_CREDENTIAL_PATH"
+
+      - name: Build and Run Services
+        run: |
+          cd ./apps
+          docker-compose up --build -d
+
+      - name: Wait for services to be ready
+        run: sleep 30
+
+      - name: Install websocat
+        run: |
+          sudo wget -qO /usr/local/bin/websocat https://github.com/vi/websocat/releases/latest/download/websocat.x86_64-unknown-linux-musl
+          sudo chmod a+x /usr/local/bin/websocat
+          websocat --version
+
+      - name: Run Tests
+        env:
+          FRONTEND_URL: ${{ vars.FRONTEND_URL }}
+          USER_SERVICE_URL: ${{ vars.USER_SERVICE_URL }}
+          QUESTION_SERVICE_URL: ${{ vars.QUESTION_SERVICE_URL }}
+          MATCHING_SERVICE_URL: ${{ vars.MATCHING_SERVICE_URL }}
+        run: |
+          echo "Testing Question Service..."
+          curl -sSL -o /dev/null $QUESTION_SERVICE_URL && echo "Question Service is up"
+          echo "Testing User Service..."
+          curl -fsSL -o /dev/null $USER_SERVICE_URL && echo "User Service is up"
+          echo "Testing Frontend..."
+          curl -fsSL -o /dev/null $FRONTEND_URL && echo "Frontend is up"
+          echo "Testing Matching Service..."
+          if ! (echo "Hello" | websocat $MATCHING_SERVICE_URL); then
+            echo "WebSocket for Matching Service is not live"
+          else
+            echo "WebSocket for Matching Service is live"
+          fi
+          # Add in test for matching service in the future
+
+          # We can add more tests here

@@ -1,0 +1,42 @@
+.layout {
+  background: white;
+}
+
+.content {
+  background: white;
+}
+
+.register-card {
+  /* Rectangle 6698 */
+  margin: 6rem auto;
+  padding: 2rem 3rem;
+  box-sizing: border-box;
+  max-width: 26rem;
+  background: #ffffff;
+  border: 2px solid #8a817c;
+  box-shadow: 3px 4px 4px rgba(0, 0, 0, 0.25);
+  border-radius: 15px;
+}
+
+.registration-failed-text {
+  color: #f02849;
+  font-size: 13px;
+}
+
+.register-button {
+  width: 100%;
+}
+
+.login-text {
+  color: #bcb8b1;
+  margin: auto;
+  text-align: center;
+}
+
+.login-account-link {
+  color: #8a817c;
+}
+
+.login-account-link:hover {
+  color: #463f3a;
+}

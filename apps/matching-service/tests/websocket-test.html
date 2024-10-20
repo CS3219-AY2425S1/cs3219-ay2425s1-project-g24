@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Matching service: websocket test</title>
+  </head>
+  <body>
+    <p id="status1">Status (Conn 1): no matching yet</p>
+    <button onclick="openWebSocket1()">Find match (Conn 1)</button>
+    <button onclick="closeConnection1()">Cancel matching (Conn 1)</button>
+    <p id="response1"></p>
+
+    <p id="status2">Status (Conn 2): no matching yet</p>
+    <button onclick="openWebSocket2()">Find match (Conn 2)</button>
+    <button onclick="closeConnection2()">Cancel matching (Conn 2)</button>
+    <p id="response2"></p>
+
+    <script>
+      let socket1 = null;
+      let socket2 = null;
+
+      function generateRandomDetails() {
+        const username = Math.random().toString(36).substring(2, 8); // Generates a random username
+        const domains = ["example.com", "mail.com", "test.com"];
+        const domain = domains[Math.floor(Math.random() * domains.length)];
+        return [username, `${username}@${domain}`];
+      }
+
+      function openWebSocket1() {
+        if (socket1 != null) return;
+        socket1 = new WebSocket("ws://localhost:8081/match");
+        document.getElementById("response1").innerText = "";
+
+        socket1.onopen = function () {
+          console.log("WebSocket 1 is open now.");
+          const arr = generateRandomDetails();
+          socket1.send(
+            JSON.stringify({
+              type: "match_request",
+              topics: ["Algorithms", "Arrays"],
+              difficulties: ["Easy", "Medium"],
+              username: "Timothy",
+            })
+          );
+          document.getElementById("status1").innerText =
+            "Status (Conn 1): matching in progress...";
+        };
+
+        socket1.onmessage = function (event) {
+          console.log("Message from Conn 1: " + event.data);
+          document.getElementById("response1").innerText =
+            "Received from Conn 1: " + event.data;
+          document.getElementById("status1").innerText =
+            "Status (Conn 1): matching found/timeout";
+        };
+
+        socket1.onerror = function (error) {
+          console.log("WebSocket 1 error: " + error);
+        };
+
+        socket1.onclose = function () {
+          console.log("WebSocket 1 is closed now.");
+          socket1 = null;
+        };
+      }
+
+      function closeConnection1() {
+        document.getElementById("status1").innerText =
+          "Status (Conn 1): matching cancelled";
+        document.getElementById("response1").innerText = "";
+        socket1.close();
+      }
+
+      function openWebSocket2() {
+        if (socket2 != null) return;
+        socket2 = new WebSocket("ws://localhost:8081/match");
+        document.getElementById("response2").innerText = "";
+
+        socket2.onopen = function () {
+          console.log("WebSocket 2 is open now.");
+          const arr = generateRandomDetails();
+          socket2.send(
+            JSON.stringify({
+              type: "match_request",
+              topics: ["Algorithms", "Graphs"],
+              difficulties: ["Medium", "Hard"],
+              username: "Jennie",
+            })
+          );
+          document.getElementById("status2").innerText =
+            "Status (Conn 2): matching in progress...";
+        };
+
+        socket2.onmessage = function (event) {
+          console.log("Message from Conn 2: " + event.data);
+          document.getElementById("response2").innerText =
+            "Received from Conn 2: " + event.data;
+          document.getElementById("status2").innerText =
+            "Status (Conn 2): matching found/timeout";
+        };
+
+        socket2.onerror = function (error) {
+          console.log("WebSocket 2 error: " + error);
+        };
+
+        socket2.onclose = function () {
+          console.log("WebSocket 2 is closed now.");
+          socket2 = null;
+        };
+      }
+
+      function closeConnection2() {
+        document.getElementById("status2").innerText =
+          "Status (Conn 2): matching cancelled";
+        document.getElementById("response2").innerText = "";
+        socket2.close();
+      }
+    </script>
+  </body>
+</html>

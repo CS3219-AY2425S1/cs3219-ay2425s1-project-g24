@@ -1,0 +1,106 @@
+#!/bin/bash
+
+# Output file
+output_file="test_list_api_results.txt"
+
+cd .. || { echo "Failed to navigate to parent directory."; exit 1; }
+go run populate.go || { echo "Failed to populate database."; exit 1; }
+cd - || { echo "Failed to navigate back."; exit 1; }
+
+# Clear the output file
+> "$output_file"
+
+# List of curl commands
+requests=(
+"GET http://localhost:8080/questions"
+"GET http://localhost:8080/questions?offset=10"
+"GET http://localhost:8080/questions?title=Reverse%20a%20String"
+"GET http://localhost:8080/questions?complexity=easy,medium"
+"GET http://localhost:8080/questions?categories=Algorithms,Data%20Structures"
+"GET http://localhost:8080/questions?categories=Algorithms,Data%20Structures&complexity=easy,medium"
+"GET http://localhost:8080/questions?categories=Algorithms,Strings&title=Reverse%20a%20String"
+"GET http://localhost:8080/questions?complexity=easy,medium&title=Reverse%20a%20String"
+"GET http://localhost:8080/questions?complexity=easy,medium&title=Reverse%20a%20String&categories=Algorithms,Strings"
+"GET http://localhost:8080/questions?sortField=title&sortValue=asc&offset=10"
+"GET http://localhost:8080/questions?sortField=title&sortValue=desc&offset=10"
+"GET http://localhost:8080/questions?sortField=createdAt&sortValue=asc&offset=10"
+"GET http://localhost:8080/questions?sortField=createdAt&sortValue=desc&offset=10"
+"GET http://localhost:8080/questions?sortField=complexity&sortValue=asc&offset=10"
+"GET http://localhost:8080/questions?sortField=complexity&sortValue=desc&offset=10"
+"GET http://localhost:8080/questions?sortField=id&sortValue=asc&offset=10"
+"GET http://localhost:8080/questions?sortField=id&sortValue=desc&offset=10"
+"GET http://localhost:8080/questions?limit=5"
+"GET http://localhost:8080/questions?limit=5&offset=10"
+"GET http://localhost:8080/questions?title=Reverse%20a%20String&sortField=complexity&sortValue=asc"
+"GET http://localhost:8080/questions?title=Reverse%20a%20String&sortField=complexity&sortValue=desc"
+"GET http://localhost:8080/questions?complexity=easy,medium&sortField=complexity&sortValue=asc"
+"GET http://localhost:8080/questions?complexity=easy,medium&sortField=complexity&sortValue=desc"
+"GET http://localhost:8080/questions?categories=Algorithms,Data%20Structures&sortField=complexity&sortValue=asc"
+"GET http://localhost:8080/questions?categories=Algorithms,Data%20Structures&sortField=complexity&sortValue=desc"
+"GET http://localhost:8080/questions?categories=Algorithms,Data%20Structures&complexity=easy,medium&sortField=complexity&sortValue=asc"
+"GET http://localhost:8080/questions?categories=Algorithms,Data%20Structures&complexity=easy,medium&sortField=complexity&sortValue=desc"
+"GET http://localhost:8080/questions?categories=Algorithms,Strings&title=Reverse%20a%20String&sortField=complexity&sortValue=asc"
+"GET http://localhost:8080/questions?categories=Algorithms,Strings&title=Reverse%20a%20String&sortField=complexity&sortValue=desc"
+"GET http://localhost:8080/questions?complexity=easy,medium&title=Reverse%20a%20String&sortField=complexity&sortValue=asc"
+"GET http://localhost:8080/questions?complexity=easy,medium&title=Reverse%20a%20String&sortField=complexity&sortValue=desc"
+"GET http://localhost:8080/questions?complexity=easy,medium&title=Reverse%20a%20String&categories=Algorithms,Strings&sortField=complexity&sortValue=asc"
+"GET http://localhost:8080/questions?complexity=easy,medium&title=Reverse%20a%20String&categories=Algorithms,Strings&sortField=complexity&sortValue=desc"
+"GET http://localhost:8080/questions?title=Reverse%20a%20String&sortField=createdAt&sortValue=asc"
+"GET http://localhost:8080/questions?title=Reverse%20a%20String&sortField=createdAt&sortValue=desc"
+"GET http://localhost:8080/questions?complexity=easy,medium&sortField=createdAt&sortValue=asc"
+"GET http://localhost:8080/questions?complexity=easy,medium&sortField=createdAt&sortValue=desc"
+"GET http://localhost:8080/questions?categories=Algorithms,Data%20Structures&sortField=createdAt&sortValue=asc"
+"GET http://localhost:8080/questions?categories=Algorithms,Data%20Structures&sortField=createdAt&sortValue=desc"
+"GET http://localhost:8080/questions?categories=Algorithms,Data%20Structures&complexity=easy,medium&sortField=createdAt&sortValue=asc"
+"GET http://localhost:8080/questions?categories=Algorithms,Data%20Structures&complexity=easy,medium&sortField=createdAt&sortValue=desc"
+"GET http://localhost:8080/questions?categories=Algorithms,Strings&title=Reverse%20a%20String&sortField=createdAt&sortValue=asc"
+"GET http://localhost:8080/questions?categories=Algorithms,Strings&title=Reverse%20a%20String&sortField=createdAt&sortValue=desc"
+"GET http://localhost:8080/questions?complexity=easy,medium&title=Reverse%20a%20String&sortField=createdAt&sortValue=asc"
+"GET http://localhost:8080/questions?complexity=easy,medium&title=Reverse%20a%20String&sortField=createdAt&sortValue=desc"
+"GET http://localhost:8080/questions?complexity=easy,medium&title=Reverse%20a%20String&categories=Algorithms,Strings&sortField=createdAt&sortValue=asc"
+"GET http://localhost:8080/questions?complexity=easy,medium&title=Reverse%20a%20String&categories=Algorithms,Strings&sortField=createdAt&sortValue=desc"
+"GET http://localhost:8080/questions?title=Reverse%20a%20String&sortField=id&sortValue=asc"
+"GET http://localhost:8080/questions?title=Reverse%20a%20String&sortField=id&sortValue=desc"
+"GET http://localhost:8080/questions?complexity=easy,medium&sortField=id&sortValue=asc"
+"GET http://localhost:8080/questions?complexity=easy,medium&sortField=id&sortValue=desc"
+"GET http://localhost:8080/questions?categories=Algorithms,Data%20Structures&sortField=id&sortValue=asc"
+"GET http://localhost:8080/questions?categories=Algorithms,Data%20Structures&sortField=id&sortValue=desc"
+"GET http://localhost:8080/questions?categories=Algorithms,Data%20Structures&complexity=easy,medium&sortField=id&sortValue=asc"
+"GET http://localhost:8080/questions?categories=Algorithms,Data%20Structures&complexity=easy,medium&sortField=id&sortValue=desc"
+"GET http://localhost:8080/questions?categories=Algorithms,Strings&title=Reverse%20a%20String&sortField=id&sortValue=asc"
+"GET http://localhost:8080/questions?categories=Algorithms,Strings&title=Reverse%20a%20String&sortField=id&sortValue=desc"
+"GET http://localhost:8080/questions?complexity=easy,medium&title=Reverse%20a%20String&sortField=id&sortValue=asc"
+"GET http://localhost:8080/questions?complexity=easy,medium&title=Reverse%20a%20String&sortField=id&sortValue=desc"
+"GET http://localhost:8080/questions?complexity=easy,medium&title=Reverse%20a%20String&categories=Algorithms,Strings&sortField=id&sortValue=asc"
+"GET http://localhost:8080/questions?complexity=easy,medium&title=Reverse%20a%20String&categories=Algorithms,Strings&sortField=id&sortValue=desc"
+"GET http://localhost:8080/questions?title=Reverse%20a%20String&sortField=title&sortValue=asc"
+"GET http://localhost:8080/questions?title=Reverse%20a%20String&sortField=title&sortValue=desc"
+"GET http://localhost:8080/questions?complexity=easy,medium&sortField=title&sortValue=asc"
+"GET http://localhost:8080/questions?complexity=easy,medium&sortField=title&sortValue=desc"
+"GET http://localhost:8080/questions?categories=Algorithms,Data%20Structures&sortField=title&sortValue=asc"
+"GET http://localhost:8080/questions?categories=Algorithms,Data%20Structures&sortField=title&sortValue=desc"
+"GET http://localhost:8080/questions?categories=Algorithms,Data%20Structures&complexity=easy,medium&sortField=title&sortValue=asc"
+"GET http://localhost:8080/questions?categories=Algorithms,Data%20Structures&complexity=easy,medium&sortField=title&sortValue=desc"
+"GET http://localhost:8080/questions?categories=Algorithms,Strings&title=Reverse%20a%20String&sortField=title&sortValue=asc"
+"GET http://localhost:8080/questions?categories=Algorithms,Strings&title=Reverse%20a%20String&sortField=title&sortValue=desc"
+"GET http://localhost:8080/questions?complexity=easy,medium&title=Reverse%20a%20String&sortField=title&sortValue=asc"
+"GET http://localhost:8080/questions?complexity=easy,medium&title=Reverse%20a%20String&sortField=title&sortValue=desc"
+"GET http://localhost:8080/questions?complexity=easy,medium&title=Reverse%20a%20String&categories=Algorithms,Strings&sortField=title&sortValue=asc"
+"GET http://localhost:8080/questions?complexity=easy,medium&title=Reverse%20a%20String&categories=Algorithms,Strings&sortField=title&sortValue=desc"
+"GET http://localhost:8080/questions?complexity=InvalidComplexity"
+"GET http://localhost:8080/questions?InvalidFilterField=InvalidComplexity"
+"GET http://localhost:8080/questions?sortField=InvalidSortField&sortValue=asc"
+"GET http://localhost:8080/questions?sortField=complexity&&sortValue=InvalidSortValue"
+)
+
+# Execute each request and save the output to the file
+for request in "${requests[@]}"; do
+    method=$(echo $request | cut -d' ' -f1)
+    url=$(echo $request | cut -d' ' -f2)
+    echo "Executing: $request" >> "$output_file"
+    echo "Response:" >> "$output_file"
+    curl -s -X $method "$url" >> "$output_file"
+    echo -e "\n" >> "$output_file"
+done
+
+echo "All requests executed. Results saved in $output_file."
