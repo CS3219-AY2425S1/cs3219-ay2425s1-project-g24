@@ -1,6 +1,7 @@
 import React from "react";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { ConfigProvider } from "antd";
+import WebSocketProvider from "@/components/WebSocketProvider/websocketprovider";
 
 const RootLayout = ({
   children,
@@ -23,7 +24,11 @@ const RootLayout = ({
           },
         }}
       >
-        <AntdRegistry>{children}</AntdRegistry>
+        <AntdRegistry>
+          <WebSocketProvider>
+            {children}
+          </WebSocketProvider>
+        </AntdRegistry>
       </ConfigProvider>
     </body>
   </html>

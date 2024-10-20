@@ -38,5 +38,28 @@ services:
     volumes:
       - ./question-service:/question-service
 
+  matching-service:
+    build:
+      context: ./matching-service
+      dockerfile: Dockerfile
+    ports:
+      - 8081:8081
+    env_file:
+      - ./matching-service/.env
+    networks:
+      - apps_network
+    volumes:
+      - ./matching-service:/matching-service
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:latest
+    networks:
+      - apps_network
+    ports:
+      - 6379:6379
+    container_name: redis-container
+
 networks:
   apps_network:

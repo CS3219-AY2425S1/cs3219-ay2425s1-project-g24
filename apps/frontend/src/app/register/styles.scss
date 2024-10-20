@@ -6,23 +6,14 @@
   background: white;
 }
 
-.content-card {
-  margin: 4rem 8rem;
-  padding: 2rem 4rem;
-  background-color: white;
-  min-height: 100vh;
-  border-radius: 30px;
-  box-shadow: 0px 10px 60px rgba(226, 236, 249, 0.5);
-}
-
-.login-card {
+.register-card {
   /* Rectangle 6698 */
-  margin: 4rem auto;
-  padding: 2rem 4rem;  
+  margin: 6rem auto;
+  padding: 2rem 3rem;
   box-sizing: border-box;
-  max-width: 30rem;
-  background: #FFFFFF;
-  border: 2px solid #8A817C;
+  max-width: 26rem;
+  background: #ffffff;
+  border: 2px solid #8a817c;
   box-shadow: 3px 4px 4px rgba(0, 0, 0, 0.25);
   border-radius: 15px;
 }
@@ -32,50 +23,20 @@
   font-size: 13px;
 }
 
-.content-row-1 {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-}
-
-.content-title {
-  //   font-family: "Poppins";
-  //   font-style: normal;
-  font-weight: 600;
-  font-size: 22px;
-  line-height: 33px;
-  letter-spacing: -0.01em;
-  color: #000000;
-}
-
-.content-filter {
-  margin: 1.5rem 0;
-}
-
-.edit-button {
-  margin-right: 0.5rem;
-}
-
-.filter-button {
-  margin-left: 8px;
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.02) !important;
-}
-
-.clear-button {
+.register-button {
   width: 100%;
 }
 
-.categories-multi-select,
-.difficulty-select,
-.order-select {
-  width: 100%;
+.login-text {
+  color: #bcb8b1;
+  margin: auto;
+  text-align: center;
 }
 
-.create-title,
-.new-problem-categories-multi-select,
-.new-problem-difficulty-select,
-.create-description,
-.create-problem-id {
-  width: 100%;
-  margin: 5px;
+.login-account-link {
+  color: #8a817c;
+}
+
+.login-account-link:hover {
+  color: #463f3a;
 }

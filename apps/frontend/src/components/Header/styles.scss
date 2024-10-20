@@ -30,10 +30,11 @@ $secondary-color: #463f3a;
   color: $secondary-color;
 }
 
-.logo-container {
+.logo-container-special {
   display: flex;
   flex-direction: row;
   padding: 0 16px 0 0;
+  cursor: pointer !important;
 }
 
 .profile-menu-items {

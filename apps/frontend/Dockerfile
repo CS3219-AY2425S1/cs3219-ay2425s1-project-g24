@@ -41,7 +41,7 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 # Include this when we want to include images in the future
-# COPY --from=builder /app/public ./public 
+COPY --from=builder /app/public ./public 
 
 # Set the correct permission for prerender cache
 RUN mkdir .next

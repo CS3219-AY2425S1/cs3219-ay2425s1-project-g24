@@ -1,3 +1,6 @@
+$primary-color: #e0afa0;
+$secondary-color: #463f3a;
+
 .layout {
   background: white;
 }
@@ -6,59 +9,77 @@
   background: white;
 }
 
-.content-card {
-  margin: 4rem 8rem;
-  padding: 2rem 4rem;
-  background-color: white;
+.home-content-card {
+  padding: 7rem 8rem;
   min-height: 100vh;
-  border-radius: 30px;
-  box-shadow: 0px 10px 60px rgba(226, 236, 249, 0.5);
-}
-
-.content-row-1 {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  margin: auto;
 }
 
-.content-title {
-  //   font-family: "Poppins";
-  //   font-style: normal;
-  font-weight: 600;
-  font-size: 22px;
-  line-height: 33px;
-  letter-spacing: -0.01em;
-  color: #000000;
+.right-panel {
+  margin-left: 8rem;
 }
 
-.content-filter {
-  margin: 1.5rem 0;
+.logo-title {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 700;
+  font-size: 48px;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  text-shadow: 0px 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.edit-button {
-  margin-right: 0.5rem;
+.logo1-title {
+  @extend .logo-title;
+  color: $primary-color;
 }
 
-.filter-button {
-  margin-left: 8px;
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.02) !important;
+.logo2-title {
+  @extend .logo-title;
+  color: $secondary-color;
 }
 
-.clear-button {
-  width: 100%;
+.logo-container {
+  display: flex;
+  flex-direction: row;
+  padding: 0 16px 0 0;
 }
 
-.categories-multi-select,
-.difficulty-select,
-.order-select {
-  width: 100%;
+.slogan {
+  margin-top: 4rem;
+  width: 376px;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 29px;
 }
 
-.create-title,
-.new-problem-categories-multi-select,
-.new-problem-difficulty-select,
-.create-description,
-.create-problem-id {
-  width: 100%;
-  margin: 5px;
+.slogan-1 {
+  color: #463f3a;
+}
+
+.slogan-2 {
+  color: #e0afa0;
+}
+
+.button-container {
+  margin-top: 4rem;
+}
+
+.match-button {
+  color: #e0afa0 !important;
+  font-weight: 700 !important;
+  font-size: 20px !important;
+  border-radius: 30px !important;
+  width: 242px !important;
+  border: 3px solid #e0afa0 !important;
+  padding: 20px 0 !important;
+}
+
+.match-button:hover {
+  color: #d58770 !important;
+  border: 3px solid #d58770 !important;
 }

@@ -25,6 +25,7 @@ Then, follow the `.env.example` file and create a `.env` file in the current dir
 ```bash
 NEXT_PUBLIC_QUESTION_SERVICE_URL="http://localhost:8080"
 NEXT_PUBLIC_USER_SERVICE_URL="http://localhost:3001/"
+NEXT_PUBLIC_MATCHING_SERVICE_URL="ws://localhost:8081"
 ```
 
 First, run the development server:

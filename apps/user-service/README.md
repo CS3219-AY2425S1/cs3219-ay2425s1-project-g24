@@ -303,3 +303,7 @@ docker ps
 # To stop the container, use the container ID from the previous command
 docker stop <container_id>
 ```
+
+### Known Issues with MongoDB
+
+The user service fails to connect to the Mongo DB server on NUS Wi-Fi. To resolve this we have to use another network.

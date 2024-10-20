@@ -8,13 +8,14 @@ import Link from "next/link";
 import { loginUser } from "@/app/services/user";
 import { setToken } from "@/app/services/login-store";
 import { useRouter } from "next/navigation";
+import NoAuthHeader from "@/components/NoAuthHeader/NoAuthHeader";
 
 type InputFields = {
   email: string;
   password: string;
 };
 
-export default function Home() {
+export default function LoginPage() {
   const [isLoginFailed, setIsLoginFailed] = useState(false);
   const router = useRouter();
   const [messageApi, contextHolder] = message.useMessage();
@@ -42,9 +43,9 @@ export default function Home() {
   return (
     <>
       {contextHolder}
-      <Layout>
-        <Header selectedKey={undefined} />
-        <Content>
+      <Layout className="layout">
+        <NoAuthHeader />
+        <Content className="content">
           <div className="login-card">
             <h1>Login</h1>
             <Form name="basic" onFinish={submitDetails}>
@@ -80,14 +81,23 @@ export default function Home() {
               </div>
 
               <Form.Item>
-                <Button type="primary" htmlType="submit">
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  className="login-button"
+                >
                   Login
                 </Button>
               </Form.Item>
             </Form>
-            <p>
-              Let me <Link href="/register">register</Link>
-            </p>
+            <div>
+              <p className="registration-text">
+                Not registered yet?{" "}
+                <Link href="/register" className="create-account-link">
+                  Create an account
+                </Link>
+              </p>
+            </div>
           </div>
         </Content>
       </Layout>

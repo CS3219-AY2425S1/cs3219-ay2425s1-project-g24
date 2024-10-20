@@ -16,17 +16,21 @@ In the `./apps` directory:
 ```plaintext
 .
 ├── docker-compose.yml       # Docker Compose configuration
+├── README.md                # Project documentation (for docker compose)
 ├── .env                     # Global environment variables (optional)
 ├── frontend
 │   ├── Dockerfile           # Dockerfile for frontend
 │   └── ... (other frontend files)
+├── matching-service
+│   ├── Dockerfile           # Dockerfile for matching-service
+│   └── ... (other matching-service files)
 ├── question-service
 │   ├── Dockerfile           # Dockerfile for question-service
 │   └── ... (other question-service files)
 ├── user-service
 │   ├── Dockerfile           # Dockerfile for user-service
 │   └── ... (other user-service files)
-└── README.md                # Project documentation (for docker compose)
+
 ```
 
 ## Docker Compose Setup
@@ -53,6 +57,8 @@ Once running, you can access:
 - The **frontend** at http://localhost:3000
 - The **user service** at http://localhost:3001
 - The **question service** at http://localhost:8080
+- The **matching service** at http://localhost:8081
+- The **redis service** at http://localhost:6379
 
 3. Stopping Services
 
@@ -66,12 +72,16 @@ This command will stop and remove the containers, networks, and volumes created 
 
 ## Troubleshooting
 
-**Common Issues**
+### Common Issues
 
-- Port Conflicts: If you encounter port conflicts, ensure the host ports specified in docker-compose.yml (e.g., 3000:3000) are not in use by other applications.
-- Environment Variables Not Loaded: Ensure the `.env` files are in the correct directories as found in the `docker-compose.yml` file.
+- **Port Conflicts**: If you encounter port conflicts, ensure the host ports specified in docker-compose.yml (e.g., 3000:3000) are not in use by other applications.
+- **Environment Variables Not Loaded**: Ensure the `.env` files are in the correct directories as found in the `docker-compose.yml` file.
 
-**Logs**
+### Known Issues
+
+- **Mongo DB Connection Failing**: The user service fails to connect to the Mongo DB server on NUS Wi-Fi. To resolve this we have to use another network.
+
+### Logs
 
 You can view the logs for each service using the following command:
 
@@ -79,7 +89,7 @@ You can view the logs for each service using the following command:
 docker-compose logs
 ```
 
-**Useful Commands**
+### Useful Commands
 
 Rebuild a specific service:
 
