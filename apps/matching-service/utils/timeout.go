@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"os"
 	"strconv"
 	"time"
@@ -14,4 +15,14 @@ func GetTimeoutDuration() (time.Duration, error) {
 		return 0, err
 	}
 	return time.Duration(timeout) * time.Second, nil
+}
+
+// createTimeoutContext sets up a timeout context based on configuration.
+func CreateTimeoutContext() (context.Context, context.CancelFunc, error) {
+	timeoutDuration, err := GetTimeoutDuration()
+	if err != nil {
+		return nil, nil, err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
+	return ctx, cancel, nil
 }
