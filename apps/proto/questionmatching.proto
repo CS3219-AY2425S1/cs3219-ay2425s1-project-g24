@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package questionmatching;
+
+option go_package = "./questionmatching";
+
+message MatchQuestionRequest {
+    repeated string matched_topics = 1;
+    repeated string matched_difficulties = 2;
+}
+
+message QuestionFound {
+    int64 question_id = 1;
+    string question_name = 2;
+    string question_difficulty = 3;
+    repeated string question_topics = 4;
+}
+
+service QuestionMatchingService {
+    rpc FindMatchingQuestion (MatchQuestionRequest) returns (QuestionFound);
+}

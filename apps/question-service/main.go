@@ -5,8 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
+	pb "proto/questionmatching"
 	"question-service/handlers"
 	mymiddleware "question-service/middleware"
 	"question-service/utils"
@@ -19,6 +21,7 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
 	"google.golang.org/api/option"
+	"google.golang.org/grpc"
 )
 
 // initFirestore initializes the Firestore client
@@ -62,6 +65,8 @@ func main() {
 		return
 	}
 
+	go initGrpcServer()
+
 	// Set up chi router
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
@@ -98,9 +103,36 @@ func main() {
 	}
 
 	// Start the server
-	log.Printf("Starting server on http://localhost:%s", port)
+	log.Printf("Starting REST server on http://localhost:%s", port)
 	err = http.ListenAndServe(fmt.Sprintf(":%s", port), r)
 	if err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
+}
+
+type server struct {
+	pb.UnimplementedQuestionMatchingServiceServer // Embed the unimplemented service
+}
+
+func initGrpcServer() {
+	lis, err := net.Listen("tcp", ":50051")
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	s := grpc.NewServer()
+	pb.RegisterQuestionMatchingServiceServer(s, &server{})
+
+	log.Printf("gRPC Server is listening on port 50051...")
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
+}
+
+func (s *server) FindMatchingQuestion(ctx context.Context, req *pb.MatchQuestionRequest) (*pb.QuestionFound, error) {
+	return &pb.QuestionFound{
+		QuestionId:         1,
+		QuestionName:       "abc",
+		QuestionDifficulty: "Easy",
+		QuestionTopics:     []string{"Algorithms", "Arrays"},
+	}, nil
 }
