@@ -11,3 +11,6 @@ test_update_api_results.txt
 Dockerfile
 
 README.md
+
+node_modules
+.next
