@@ -129,20 +129,39 @@ To run the application via Docker, run the following command:
 
 1. Set up the Go Docker container for the matching service
 ```bash
-docker build -f Dockerfile -t match-go-app .
+docker build -f Dockerfile -t matching-service .
 ```
 
-2. Create the Docker network for Redis and Go
+2. Create the Docker network for matching service
 ```bash
-docker network create redis-go-network
+docker network create matching-service-network
 ```
 
-3. Start a new Redis container in detached mode using the Redis image from Docker Hub
+3. Start a new Redis container in detached mode using the Redis image from Docker Hub, and run it in the matching service network
 ```bash
-docker run -d --name redis-container --network redis-go-network redis
+docker run -d --name redis-container --network matching-service-network redis
 ```
 
-4. Run the Go Docker container for the matching-service
+4. Run the Go Docker container for the matching-service inside the same matching service network as the redis container, so that they can communicate with one another
 ```bash
-docker run -d -p 8081:8081 --name go-app-container --network redis-go-network match-go-app
+docker run -d -p 8081:8081 --name matching-service-container --network matching-service-network matching-service
+```
+
+### Stopping Docker Processes and Network
+
+```bash
+# To stop the container for matching service, use the container ID for matching service from the previous command
+docker stop <container_id_for_matching_service>
+
+# To remove the container, use the container ID for matching service from the previous command
+docker remove <container_id_for_matching_service>
+
+# To stop the container for redis, use the container ID for redis from the previous command
+docker stop <container_id_for_redis>
+
+# To stop the container for redis, use the container ID for redis from the previous command
+docker remove <container_id_for_redis>
+
+# To remove the matching service network, use the following command
+docker network rm matching-service-network
 ```

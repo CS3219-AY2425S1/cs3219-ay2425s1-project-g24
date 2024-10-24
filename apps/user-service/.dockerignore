@@ -4,8 +4,6 @@ node_modules
 README.md
 MongoDBSetup.md
 LICENSE
-.env
-.env*
 Dockerfile
 GuideAssets
 .dockerignore
