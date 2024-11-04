@@ -50,7 +50,7 @@ jobs:
       - name: Run tests with emulator
         uses: w9jds/firebase-action@master
         with:
-          args: emulators:exec --only firestore --project demo-test-project "cd ./apps/question-service"
+          args: emulators:exec --only firestore --project demo-test-project "npm test"
         env:
           # dummy json because action needs it
           GCP_SA_KEY: ${{ secrets.QUESTION_SERVICE_FIREBASE_CREDENTIAL }}
