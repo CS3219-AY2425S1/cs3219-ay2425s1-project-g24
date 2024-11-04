@@ -49,3 +49,6 @@ jobs:
 
       - name: Install firebase tools
         run: curl -sL firebase.tools | bash
+
+      - name: Try starting
+        run: firebase --help
