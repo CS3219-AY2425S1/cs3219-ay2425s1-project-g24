@@ -210,4 +210,3 @@ jobs:
         uses: w9jds/firebase-action@master
         with:
           args: emulators:start --only firestore
-        env:
