@@ -51,4 +51,4 @@ jobs:
         run: curl -sL firebase.tools | bash
 
       - name: Try starting
-        run: firebase emulators:exec --only firestore 'cd ./apps/question-service'
+        run: firebase emulators:exec --only firestore 'cd ./apps/question-service; go test ./...'
