@@ -20,5 +20,5 @@ jobs:
         uses: w9jds/firebase-action@master
         with:
           args: emulators:start --only firestore --project demo-test-project
-          env:
-            GCP_SA_KEY: asdf
+        env:
+          GCP_SA_KEY: asdf
