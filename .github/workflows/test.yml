@@ -51,4 +51,4 @@ jobs:
         run: curl -sL firebase.tools | bash
 
       - name: Try starting
-        run: firebase --help
+        run: firebase emulators:start --only firestore
