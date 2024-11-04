@@ -52,4 +52,4 @@ jobs:
         with:
           args: emulators:start --only firestore --project demo-test-project
         env:
-          GCP_SA_KEY: dummy
+          GCP_SA_KEY: ${{ secrets.QUESTION_SERVICE_FIREBASE_CREDENTIAL }}
