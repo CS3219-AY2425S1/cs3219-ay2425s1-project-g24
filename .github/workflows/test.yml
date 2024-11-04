@@ -204,6 +204,7 @@ jobs:
             echo "WebSocket for Signalling Service is live"
           fi
           # We can add more tests here
+
   test-firebase:
     name: Test
     runs-on: ubuntu-latest
