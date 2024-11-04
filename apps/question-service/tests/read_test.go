@@ -54,7 +54,7 @@ var client *firestore.Client
 func TestMain(m *testing.M) {
 	// fmt.Printf("test")
 	// Set FIRESTORE_EMULATOR_HOST environment variable.
-	err := os.Setenv("FIRESTORE_EMULATOR_HOST", "localhost:8390")
+	err := os.Setenv("FIRESTORE_EMULATOR_HOST", "localhost:8080")
 	if err != nil {
 		// TODO: Handle error.
 		log.Fatalf("could not set env %v", err)
@@ -87,16 +87,16 @@ func setup(t *testing.T) string {
 	return docRef.ID
 }
 func Test_Read(t *testing.T) {
-	id = setup(t)
+	id := setup(t)
 
 	res := httptest.NewRecorder()
 
 	// adds chi context
 	// https://stackoverflow.com/questions/54580582/testing-chi-routes-w-path-variables
 	rctx := chi.NewRouteContext()
-	rctx.URLParams.Add("docRefID", "6SdbW4Awcfm5x0UQtWmg")
+	rctx.URLParams.Add("docRefID", id)
 
-	req := httptest.NewRequest(http.MethodGet, "http://localhost:8080/questions/6SdbW4Awcfm5x0UQtWmg", strings.NewReader(""))
+	req := httptest.NewRequest(http.MethodGet, "http://localhost:8080/questions/"+id, strings.NewReader(""))
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 	service.ReadQuestion(res, req)

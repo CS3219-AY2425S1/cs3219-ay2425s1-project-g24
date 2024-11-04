@@ -16,8 +16,58 @@ jobs:
   test-firebase:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to Firebase
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      
+      - name: Set up .env
+        env:
+          QUESTION_FIREBASE_CREDENTIAL_PATH: ${{ vars.QUESTION_SERVICE_FIREBASE_CREDENTIAL_PATH }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        run: |
+          cd ./apps/question-service
+          
+          echo "FIREBASE_CREDENTIAL_PATH=$QUESTION_FIREBASE_CREDENTIAL_PATH" >> .env
+          echo "JWT_SECRET=$JWT_SECRET" >> .env
+      
+      - name: Set up credentials
+        env:
+          QUESTION_FIREBASE_JSON: ${{ secrets.QUESTION_SERVICE_FIREBASE_CREDENTIAL }}
+          QUESTION_FIREBASE_CREDENTIAL_PATH: ${{ vars.QUESTION_SERVICE_FIREBASE_CREDENTIAL_PATH }}
+        run: |
+          cd ./apps/question-service
+          echo "$QUESTION_FIREBASE_JSON" > "./$QUESTION_FIREBASE_CREDENTIAL_PATH"
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with: 
+          go-version: '1.23.x'
+
+      - name: Install dependencies
+        run: |
+          cd ./apps/question-service
+          go mod tidy
+
+      - name: Run tests with emulator
         uses: w9jds/firebase-action@master
+        with:
+          args: emulators:exec --only firestore --project demo-test-project 'cd ./apps/question-service; go test ./...'
+        env:
+          GCP_SA_KEY: dummy
+
+  frontend-unit-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup .env
+        run: |
+          cd ./apps/frontend
+          cp .env.example  .env
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
         with:
           args: emulators:start --only firestore --project demo-test-project
         env:
