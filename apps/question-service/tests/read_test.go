@@ -24,9 +24,9 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalf("could not set env %v", err)
 	}
-	// Create client as usual.
+	// Create client.
 	client, err := firestore.NewClient(ctx, "my-project-id")
-	service = &handlers.Service{client}
+	service = &handlers.Service{Client: client}
 
 	if err != nil {
 		log.Fatalf("could not create client %v", err)
@@ -37,11 +37,13 @@ func TestMain(m *testing.M) {
 	os.Exit(0)
 }
 
-func setup(t *testing.T) string {
+// Sets up the firestore emulator with the sample questions
+// This repopulates the db
+// Returns the docref of one of the questions if a test need it
+func setupDb(t *testing.T) string {
 	// Repopulate document
 	utils.Populate(service.Client)
 
-	// Read the document
 	coll := service.Client.Collection("questions")
 	if coll == nil {
 		t.Fatalf("Failed to get CollectionRef")
@@ -52,18 +54,22 @@ func setup(t *testing.T) string {
 	}
 	return docRef.ID
 }
-func Test_Read(t *testing.T) {
-	id := setup(t)
 
-	res := httptest.NewRecorder()
-
+func ReadRequestWithId(id string) *http.Request {
 	// adds chi context
 	// https://stackoverflow.com/questions/54580582/testing-chi-routes-w-path-variables
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("docRefID", id)
 
-	req := httptest.NewRequest(http.MethodGet, "http://localhost:8080/questions/"+id, strings.NewReader(""))
+	req := httptest.NewRequest(http.MethodGet, "http://localhost:12345/questions/"+id, strings.NewReader(""))
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+	return req
+}
+func Test_Read(t *testing.T) {
+	id := setupDb(t)
+
+	res := httptest.NewRecorder()
+	req := ReadRequestWithId(id)
 
 	service.ReadQuestion(res, req)
 
@@ -73,15 +79,10 @@ func Test_Read(t *testing.T) {
 }
 
 func Test_ReadNotFound(t *testing.T) {
+	setupDb(t)
+
 	res := httptest.NewRecorder()
-
-	// adds chi context
-	// https://stackoverflow.com/questions/54580582/testing-chi-routes-w-path-variables
-	rctx := chi.NewRouteContext()
-	rctx.URLParams.Add("docRefID", "not-found-docref")
-
-	req := httptest.NewRequest(http.MethodGet, "http://localhost:8080/questions/not-found-docref", strings.NewReader(""))
-	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+	req := ReadRequestWithId("invalid-docref")
 
 	service.ReadQuestion(res, req)
 
