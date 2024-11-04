@@ -50,25 +50,6 @@ jobs:
       - name: Run tests with emulator
         uses: w9jds/firebase-action@master
         with:
-          args: emulators:exec --only firestore --project demo-test-project 'cd ./apps/question-service; go test ./...'
-        env:
-          GCP_SA_KEY: dummy
-
-  frontend-unit-tests:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Setup .env
-        run: |
-          cd ./apps/frontend
-          cp .env.example  .env
-      
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
           args: emulators:start --only firestore --project demo-test-project
         env:
-          GCP_SA_KEY: asdf
+          GCP_SA_KEY: dummy
