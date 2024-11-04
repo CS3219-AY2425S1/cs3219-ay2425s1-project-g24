@@ -2,7 +2,6 @@ package tests
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -13,56 +12,23 @@ import (
 	"testing"
 
 	"cloud.google.com/go/firestore"
-	firebase "firebase.google.com/go/v4"
 	"github.com/go-chi/chi/v5"
-	"google.golang.org/api/option"
 )
 
 var service *handlers.Service
-
-func createService() *handlers.Service {
-
-	ctx := context.Background()
-	client, err := initFirestore(ctx)
-
-	if err != nil {
-		log.Fatalf("failed to initialize Firestore: %v", err)
-	}
-
-	return &handlers.Service{Client: client}
-}
-
-// initFirestore initializes the Firestore client
-func initFirestore(ctx context.Context) (*firestore.Client, error) {
-	credentialsPath := "../" + os.Getenv("FIREBASE_CREDENTIAL_PATH")
-	opt := option.WithCredentialsFile(credentialsPath)
-	app, err := firebase.NewApp(ctx, nil, opt)
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize Firebase App: %v", err)
-	}
-
-	client, err := app.Firestore(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get Firestore client: %v", err)
-	}
-	return client, nil
-}
-
 var ctx = context.Background()
-var client *firestore.Client
 
 func TestMain(m *testing.M) {
-	// fmt.Printf("test")
 	// Set FIRESTORE_EMULATOR_HOST environment variable.
 	err := os.Setenv("FIRESTORE_EMULATOR_HOST", "localhost:8080")
 	if err != nil {
-		// TODO: Handle error.
 		log.Fatalf("could not set env %v", err)
 	}
 	// Create client as usual.
-	client, err = firestore.NewClient(ctx, "my-project-id")
+	client, err := firestore.NewClient(ctx, "my-project-id")
+	service = &handlers.Service{client}
+
 	if err != nil {
-		// TODO: Handle error.
 		log.Fatalf("could not create client %v", err)
 	}
 	defer client.Close()
@@ -73,10 +39,10 @@ func TestMain(m *testing.M) {
 
 func setup(t *testing.T) string {
 	// Repopulate document
-	utils.Populate(client)
+	utils.Populate(service.Client)
 
 	// Read the document
-	coll := client.Collection("questions")
+	coll := service.Client.Collection("questions")
 	if coll == nil {
 		t.Fatalf("Failed to get CollectionRef")
 	}
