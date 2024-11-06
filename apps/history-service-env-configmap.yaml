@@ -1,0 +1,9 @@
+apiVersion: v1
+data:
+  FIREBASE_CREDENTIAL_PATH: cs3219-staging-codehisto-bb61c-firebase-adminsdk-egopb-95cfaf9b87.json
+  PORT: "8082"
+kind: ConfigMap
+metadata:
+  labels:
+    io.kompose.service: history-service-history-service-env
+  name: history-service-env

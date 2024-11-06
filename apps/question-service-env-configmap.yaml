@@ -1,0 +1,10 @@
+apiVersion: v1
+data:
+  EXECUTION_SERVICE_URL: http://execution-service:8083/
+  FIREBASE_CREDENTIAL_PATH: cs3219-g24-firebase-adminsdk-9cm7h-b1675603ab.json
+  JWT_SECRET: 63059c735adba274cde40f2b1c0b955842d531b115bb4df3058d769b173dcc78
+kind: ConfigMap
+metadata:
+  labels:
+    io.kompose.service: question-service-question-service-env
+  name: question-service-env

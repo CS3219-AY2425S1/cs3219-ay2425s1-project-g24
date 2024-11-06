@@ -2,4 +2,6 @@ apps/question-service/.next/
 apps/question-service/next-env.d.ts
 apps/question-service/node_modules/
 services/question-service/cs3219-g24-firebase-adminsdk-9cm7h-b1675603ab.json
-
+apps/history-service-cm0-configmap.yaml
+apps/question-service-cm0-configmap.yaml
+apps/execution-service-cm0-configmap.yaml

@@ -1,0 +1,9 @@
+apiVersion: v1
+data:
+  JWT_SECRET: 63059c735adba274cde40f2b1c0b955842d531b115bb4df3058d769b173dcc78
+  PORT: "4444"
+kind: ConfigMap
+metadata:
+  labels:
+    io.kompose.service: signalling-service-signalling-service-env
+  name: signalling-service-env

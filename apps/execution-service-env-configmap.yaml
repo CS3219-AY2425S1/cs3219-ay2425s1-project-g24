@@ -1,0 +1,10 @@
+apiVersion: v1
+data:
+  FIREBASE_CREDENTIAL_PATH: cs3219-staging-codeexecution-firebase-adminsdk-ce48j-00ab09514c.json
+  HISTORY_SERVICE_URL: http://history-service:8083/
+  PORT: "8083"
+kind: ConfigMap
+metadata:
+  labels:
+    io.kompose.service: execution-service-execution-service-env
+  name: execution-service-env

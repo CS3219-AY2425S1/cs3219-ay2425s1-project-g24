@@ -1,0 +1,13 @@
+apiVersion: v1
+data:
+  NEXT_PUBLIC_EXECUTION_SERVICE_URL: http://localhost:8083/
+  NEXT_PUBLIC_HISTORY_SERVICE_URL: http://localhost:8082/
+  NEXT_PUBLIC_MATCHING_SERVICE_URL: ws://localhost:8081/match
+  NEXT_PUBLIC_QUESTION_SERVICE_URL: http://localhost:8080/
+  NEXT_PUBLIC_SIGNALLING_SERVICE_URL: ws://localhost:4444/
+  NEXT_PUBLIC_USER_SERVICE_URL: http://localhost:3001/
+kind: ConfigMap
+metadata:
+  labels:
+    io.kompose.service: frontend-frontend-env
+  name: frontend-env

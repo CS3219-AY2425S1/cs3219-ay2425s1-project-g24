@@ -1,0 +1,12 @@
+apiVersion: v1
+data:
+  DB_CLOUD_URI: mongodb+srv://admin:admin_user_service@cs3219-user-service.bbmji.mongodb.net/?retryWrites=true&w=majority&appName=cs3219-user-service
+  DB_LOCAL_URI: mongodb://127.0.0.1:27017/peerprepUserServiceDB
+  ENV: PROD
+  JWT_SECRET: 63059c735adba274cde40f2b1c0b955842d531b115bb4df3058d769b173dcc78
+  PORT: "3001"
+kind: ConfigMap
+metadata:
+  labels:
+    io.kompose.service: user-service-user-service-env
+  name: user-service-env
