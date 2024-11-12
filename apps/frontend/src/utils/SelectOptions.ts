@@ -134,15 +134,7 @@ export const ProgrammingLanguageOptions = [
     label: "Python",
   },
   {
-    value: "java",
-    label: "Java",
-  },
-  {
-    value: "c++",
-    label: "C++",
-  },
-  {
     value: "javascript",
-    label: "JavaScript",
+    label: "Javascript",
   },
 ];

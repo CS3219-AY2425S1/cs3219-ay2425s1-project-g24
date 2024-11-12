@@ -25,9 +25,12 @@ import { cppLanguage, cpp } from "@codemirror/lang-cpp";
 import { goLanguage, go } from "@codemirror/lang-go";
 import "./styles.scss";
 import { message, Select } from "antd";
-import { language } from "@codemirror/language";
+import { LanguageSupport } from "@codemirror/language";
 import { ProgrammingLanguageOptions } from "@/utils/SelectOptions";
 import { ExecutionResults, SubmissionResults } from "@/app/services/execute";
+import {language} from "@codemirror/language"
+// import {htmlLanguage, html} from "@codemirror/lang-html"
+
 
 interface CollaborativeEditorProps {
   user: string;
@@ -101,7 +104,7 @@ const CollaborativeEditor = forwardRef(
   ) => {
     const editorRef = useRef(null);
     // const providerRef = useRef<WebrtcProvider | null>(null);
-    const [selectedLanguage, setSelectedLanguage] = useState("Python");
+    let [selectedLanguage, setSelectedLanguage] = useState<string>("Python");
     let sessionEndNotified = false;
 
     const languageConf = new Compartment();
@@ -111,6 +114,29 @@ const CollaborativeEditor = forwardRef(
         props.onCodeChange(update.state.doc.toString());
       }
     });
+
+    const autoLanguage = EditorState.transactionExtender.of(tr => {
+      if (!tr.docChanged) return null
+      //let docIsHTML = /^\s*</.test(tr.newDoc.sliceString(0, 100))
+      //let stateIsHTML = tr.startState.facet(language) == htmlLanguage
+      // if (docIsHTML == stateIsHTML) return null
+      if (selectedLanguage == "Python" || selectedLanguage == "python") {
+        console.log("Changing to python in autolanguage");
+        return {
+          effects: languageConf.reconfigure(python())
+        }
+      } else if (selectedLanguage == "Javascript" || selectedLanguage == "javascript") {
+        console.log("Changing to javascript in autolanguage")
+        return {
+          effects: languageConf.reconfigure(javascript())
+        }
+      }
+
+      console.log("Changing to Python in final autolanguage")
+      return {
+          effects: languageConf.reconfigure(python())
+      }
+    })
     
     
     // Referenced: https://codemirror.net/examples/config/#dynamic-configuration
@@ -158,6 +184,44 @@ const CollaborativeEditor = forwardRef(
 
     //   const stateLanguage = tr.startState.facet(language);
     //   if (languageType == stateLanguage) return null;
+
+    //   setSelectedLanguage(languageLabel);
+
+    //   return {
+    //     effects: languageConf.reconfigure(newLanguage),
+    //   };
+    // });
+
+    // const changeLanguage = EditorState.transactionExtender.of((tr) => {
+    //   if (!tr.docChanged) return null;
+
+    //   // Handle code change
+    //   props.onCodeChange(tr.newDoc.toString());
+
+    //   let newLanguage;
+    //   let languageType;
+    //   let languageLabel;
+
+      // if (selectedLanguage == "python" || selectedLanguage == "Python") {
+      //   newLanguage = python();
+      //   languageLabel = "Python";
+      //   languageType = pythonLanguage;
+      // } else if (selectedLanguage == "java" || selectedLanguage == "Java") {
+      //   newLanguage = java();
+      //   languageLabel = "Java";
+      //   languageType = javaLanguage;
+      // } else if (selectedLanguage == "go" || selectedLanguage == "Go") {
+      //   newLanguage = go();
+      //   languageLabel = "Go";
+      //   languageType = goLanguage;
+      // } else {
+      //   newLanguage = javascript(); // Default to JavaScript
+      //   languageLabel = "JavaScript";
+      //   languageType = javascriptLanguage;
+      // }
+
+    //   // const stateLanguage = tr.startState.facet(language);
+    //   // if (languageType == stateLanguage) return null;
 
     //   setSelectedLanguage(languageLabel);
 
@@ -221,6 +285,35 @@ const CollaborativeEditor = forwardRef(
     }));
 
     let sessionEndTimeout: any;
+
+
+    let view = new EditorView();
+    
+    // function setLanguageConf(val: string) {
+    //   if (val == "python" || val == "Python") {
+    //     view.dispatch({
+    //         effects: languageConf.reconfigure(python())
+    //     })
+    //   } else if (val == "java" || val == "Java") {
+    //     view.dispatch({
+    //         effects: languageConf.reconfigure(java())
+    //     })
+    //   }
+    // }
+
+    useEffect(() => {
+      if (selectedLanguage == "python" || selectedLanguage == "Python") {
+        console.log("Changing to Python in useEffect");
+        view.dispatch({
+            effects: languageConf.reconfigure(python())
+        })
+      } else if (selectedLanguage == "javascript" || selectedLanguage == "Javascript") {
+        console.log("Changing to Javascript in useEffect");
+        view.dispatch({
+            effects: languageConf.reconfigure(javascript())
+        })
+      }
+    }, [selectedLanguage]);
 
     useEffect(() => {
       if (process.env.NEXT_PUBLIC_SIGNALLING_SERVICE_URL === undefined) {
@@ -376,20 +469,40 @@ const CollaborativeEditor = forwardRef(
           });
       });
 
-      const state = EditorState.create({
-        doc: ytext.toString(),
-        extensions: [
-          basicSetup,
-          languageConf.of(python()),
-          // languageConf.of(javascript()),
-          // autoLanguage,
-          yCollab(ytext, provider.awareness, { undoManager }),
-          keymap.of([indentWithTab]),
-          codeChangeListener,
-        ],
-      });
+      let state = EditorState.create();
 
-      const view = new EditorView({
+      // if (selectedLanguage == "python" || selectedLanguage == "Python") {
+        state = EditorState.create({
+          doc: ytext.toString(),
+          extensions: [
+            basicSetup,
+            languageConf.of(selectedLanguage == "Python" ? python() : javascript()),
+            // languageConf.of(javascript()),
+            // autoLanguage,
+            // changeLanguage,
+            yCollab(ytext, provider.awareness, { undoManager }),
+            keymap.of([indentWithTab]),
+            codeChangeListener,
+          ],
+        });
+      // }
+      // else if (selectedLanguage == "java" || selectedLanguage == "Java") {
+      //   state = EditorState.create({
+      //     doc: ytext.toString(),
+      //     extensions: [
+      //       basicSetup,
+      //       languageConf.of(java()),
+      //       // languageConf.of(javascript()),
+      //       // autoLanguage,
+      //       // changeLanguage,
+      //       yCollab(ytext, provider.awareness, { undoManager }),
+      //       keymap.of([indentWithTab]),
+      //       codeChangeListener,
+      //     ],
+      //   });
+      // }
+
+      view = new EditorView({
         state,
         parent: editorRef.current || undefined,
       });
@@ -411,9 +524,14 @@ const CollaborativeEditor = forwardRef(
             className="language-select"
             defaultValue={selectedLanguage}
             options={ProgrammingLanguageOptions}
-            onSelect={(val) => setSelectedLanguage(val)}
-            disabled
+            onSelect={(val) => {
+              setSelectedLanguage(val);
+              console.log("switch to " + val + " in val button");
+              console.log("switch to " + selectedLanguage + " in selectedLanguage button");
+              // setLanguageConf(val);
+            }}
           />
+          
         </div>
         <div
           ref={editorRef}
