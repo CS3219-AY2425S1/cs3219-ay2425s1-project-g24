@@ -384,6 +384,7 @@ export default function CollaborationPage(props: CollaborationProps) {
     localStorage.removeItem("collabId");
     localStorage.removeItem("questionDocRefId");
     localStorage.removeItem("matchedTopics");
+    localStorage.removeItem("editor-language"); // Remove editor language type when session closed
   };
 
   return (
