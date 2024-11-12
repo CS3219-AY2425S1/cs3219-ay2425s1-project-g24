@@ -1,5 +1,36 @@
 # User Service Guide
 
+NOTE: The User Service is adapted from [here](https://github.com/CS3219-AY2425S1/PeerPrep-UserService/tree/main).
+
+The User Service is a microservice responsible for handling user-related operations, such as registration, authentication, profile management, and authorization. It is part of a larger system architecture and integrates with other microservices within the project. Below outlines the requirements, architecture, and design for the User Service, and provides a thorough overview of its functionality, structure, and technology stack.
+
+The User Service is designed using a microservices architecture, integrating with other
+services through RESTful APIs. Below is a description of the architecture components
+and their interactions.
+
+1. User Service: This microservice handles all user-related operations, including user creation, authentication, data retrieval, updates, and role management. It exposes REST endpoints that allow clients to interact with the database.
+2. MongoDB: MongoDB is used as the database to store user information. It is hosted on MongoDB Cloud.
+3. Authentication: JWT tokens are generated upon login to authenticate users. This service ensures secure access to data based on user roles and verifies token validity for routing.
+
+### Technology Stack
+
+- Node.js: The primary runtime environment for the User Service due to its scalability, ease of use for API development, and compatibility with MongoDB.
+- MongoDB Cloud: Used for its scalability and ease of management. MongoDB’s document-based structure is well-suited for handling user data.
+- JWT (JSON Web Tokens): Used for secure and stateless authentication.
+
+### Authentication and Authorization
+
+The User Service uses JWT for secure token-based authentication. Upon login, a JWT is issued.
+
+This token is used in the Authorization header to grant or restrict access to specific routes based on the user’s role:
+
+- Admin Users: Can access all routes, including those that involve managing other users’ data, or editing question details.
+- Non-admin Users: Restricted to actions related to their own data only.
+
+---
+
+NOTE: This following parts in the README is adapted from [here](https://github.com/CS3219-AY2425S1/PeerPrep-UserService/tree/main).
+
 ## Setting-up
 
 > :notebook: If you are familiar to MongoDB and wish to use a local instance, please feel free to do so. This guide utilizes MongoDB Cloud Services.

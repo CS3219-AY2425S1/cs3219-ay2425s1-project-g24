@@ -2,6 +2,8 @@
 
 This project uses Docker Compose to manage multiple services such as a frontend, backend, and a database. The configuration is defined in the `docker-compose.yml` file, and environment variables can be stored in environment files for different environments (e.g., development, production).
 
+More details on how to set up Docker Compose can be found [here](../docs/setup.md)
+
 ## Prerequisites
 
 Before you begin, ensure you have the following installed on your machine:
@@ -30,7 +32,15 @@ In the `./apps` directory:
 ├── user-service
 │   ├── Dockerfile           # Dockerfile for user-service
 │   └── ... (other user-service files)
-
+├── execution-service
+│   ├── Dockerfile           # Dockerfile for execution-service
+│   └── ... (other execution-service files)
+├── signalling-service
+│   ├── Dockerfile           # Dockerfile for signalling-service
+│   └── ... (other signalling-service files)
+├── history-service
+│   ├── Dockerfile           # Dockerfile for history-service
+│   └── ... (other history-service files)
 ```
 
 ## Docker Compose Setup
@@ -54,11 +64,15 @@ This will:
 
 Once running, you can access:
 
-- The **frontend** at http://localhost:3000
-- The **user service** at http://localhost:3001
-- The **question service** at http://localhost:8080 (REST) and http://localhost:50051 (gRPC)
-- The **matching service** at http://localhost:8081
-- The **redis service** at http://localhost:6379
+- The [**frontend**](./frontend/README.md) at http://localhost:3000
+- The [**user-service**](./user-service/README.md) at http://localhost:3001
+- The [**question-service**](./question-service/README.md) at http://localhost:8080 (REST) and http://localhost:50051 (gRPC)
+- The [**matching-service**](./matching-service/README.md) at http://localhost:8081
+- The [**history-service**](./history-service/README.md) at http://localhost:8082
+- The [**execution-service**](./execution-service/README.md) at http://localhost:8083
+- The [**signalling-service**](./signalling-service/README.md) at http://localhost:4444
+- The **redis** at http://localhost:6379
+- The **rabbitmq** at http://localhost:5672
 
 3. Stopping Services
 
