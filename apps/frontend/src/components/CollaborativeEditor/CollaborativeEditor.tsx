@@ -117,24 +117,20 @@ const CollaborativeEditor = forwardRef(
 
     const autoLanguage = EditorState.transactionExtender.of(tr => {
       if (!tr.docChanged) return null
-      //let docIsHTML = /^\s*</.test(tr.newDoc.sliceString(0, 100))
-      //let stateIsHTML = tr.startState.facet(language) == htmlLanguage
-      // if (docIsHTML == stateIsHTML) return null
+
+      let storedLanguageLabel = localStorage.getItem("languageLabel") as string;
       let newLanguage: Extension = python();
       let languageType;
       let languageLabel: string = "";
-      let storedLanguageLabel = localStorage.getItem("languageLabel") as string;
 
       if (storedLanguageLabel.toLowerCase() == "python") {
         newLanguage = python();
         languageLabel = "Python";
         languageType = pythonLanguage;
-        console.log("Preparing Python in autolanguage");
       } else if (storedLanguageLabel.toLowerCase() == "javascript") {
         newLanguage = javascript();
         languageLabel = "JavaScript";
         languageType = javascriptLanguage;
-        console.log("Preparing Javascript in autolanguage");
       }
 
       const stateLanguage = tr.startState.facet(language);
@@ -142,27 +138,9 @@ const CollaborativeEditor = forwardRef(
 
       setSelectedLanguage(languageLabel);
 
-      console.log("Changing languageConf to: " + newLanguage.extension.toString() + " " + languageLabel);
       return {
         effects: languageConf.reconfigure(newLanguage),
       };
-
-      // if (selectedLanguage.toLowerCase() == "python") {
-      //   console.log("Changing to python in autolanguage");
-      //   return {
-      //     effects: languageConf.reconfigure(python())
-      //   }
-      // } else if (selectedLanguage.toLowerCase() == "javascript") {
-      //   console.log("Changing to javascript in autolanguage")
-      //   return {
-      //     effects: languageConf.reconfigure(javascript())
-      //   }
-      // }
-
-      // console.log("Changing to Python in final autolanguage")
-      // return {
-      //     effects: languageConf.reconfigure(python())
-      // }
     })
     
     
@@ -211,44 +189,6 @@ const CollaborativeEditor = forwardRef(
 
     //   const stateLanguage = tr.startState.facet(language);
     //   if (languageType == stateLanguage) return null;
-
-    //   setSelectedLanguage(languageLabel);
-
-    //   return {
-    //     effects: languageConf.reconfigure(newLanguage),
-    //   };
-    // });
-
-    // const changeLanguage = EditorState.transactionExtender.of((tr) => {
-    //   if (!tr.docChanged) return null;
-
-    //   // Handle code change
-    //   props.onCodeChange(tr.newDoc.toString());
-
-    //   let newLanguage;
-    //   let languageType;
-    //   let languageLabel;
-
-      // if (selectedLanguage == "python" || selectedLanguage == "Python") {
-      //   newLanguage = python();
-      //   languageLabel = "Python";
-      //   languageType = pythonLanguage;
-      // } else if (selectedLanguage == "java" || selectedLanguage == "Java") {
-      //   newLanguage = java();
-      //   languageLabel = "Java";
-      //   languageType = javaLanguage;
-      // } else if (selectedLanguage == "go" || selectedLanguage == "Go") {
-      //   newLanguage = go();
-      //   languageLabel = "Go";
-      //   languageType = goLanguage;
-      // } else {
-      //   newLanguage = javascript(); // Default to JavaScript
-      //   languageLabel = "JavaScript";
-      //   languageType = javascriptLanguage;
-      // }
-
-    //   // const stateLanguage = tr.startState.facet(language);
-    //   // if (languageType == stateLanguage) return null;
 
     //   setSelectedLanguage(languageLabel);
 
@@ -315,34 +255,6 @@ const CollaborativeEditor = forwardRef(
 
 
     let view = new EditorView();
-    
-    // function setLanguageConf(val: string) {
-    //   if (val == "python" || val == "Python") {
-    //     view.dispatch({
-    //         effects: languageConf.reconfigure(python())
-    //     })
-    //   } else if (val == "java" || val == "Java") {
-    //     view.dispatch({
-    //         effects: languageConf.reconfigure(java())
-    //     })
-    //   }
-    // }
-
-    // useEffect(() => {
-    //   let storedLanguageLabel = localStorage.getItem("languageLabel") as string;
-      
-    //   if (storedLanguageLabel.toLowerCase() == "python") {
-    //     console.log("Changing to Python in useEffect");
-    //     view.dispatch({
-    //         effects: languageConf.reconfigure(python())
-    //     })
-    //   } else if (storedLanguageLabel.toLowerCase() == "javascript") {
-    //     console.log("Changing to Javascript in useEffect");
-    //     view.dispatch({
-    //         effects: languageConf.reconfigure(javascript())
-    //     })
-    //   }
-    // }, [selectedLanguage]);
 
     useEffect(() => {
       if (process.env.NEXT_PUBLIC_SIGNALLING_SERVICE_URL === undefined) {
@@ -505,7 +417,7 @@ const CollaborativeEditor = forwardRef(
           doc: ytext.toString(),
           extensions: [
             basicSetup,
-            languageConf.of(selectedLanguage == "Python" ? python() : javascript()),
+            languageConf.of(python()),
             // languageConf.of(javascript()),
             autoLanguage,
             // changeLanguage,
@@ -556,9 +468,6 @@ const CollaborativeEditor = forwardRef(
             onSelect={(val) => {
               setSelectedLanguage(val);
               localStorage.setItem("languageLabel", val);
-              console.log("switch to " + val + " in val button");
-              console.log("switch to " + selectedLanguage + " in selectedLanguage button");
-              // setLanguageConf(val);
             }}
           />
           
