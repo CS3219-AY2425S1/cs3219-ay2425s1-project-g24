@@ -35,16 +35,21 @@ For CI, Selenium and a publicly available webdriver for Chrome was downloaded. A
 1. question-service-test
 
    a. This job handles testing for the Question Service, which is dependent on Firebase and Go.
+
    b. It sets up the environment variables, firebase credentials, Go environment and dependencies and runs tests with firebase emulator.
 
 2. frontend-unit-tests
 
    a. This job tests the frontend application using Node.js and pnpm
+
    b. It sets up the environment and Node.js and installs pnpm and dependencies, before running the frontend tests.
 
 3. test-docker-compose
 
    a. This job uses Docker Compose to run multiple services together and validate inter-service connectivity.
+
    b. It sets up the environment files and database credential files across all services and builds and runs services with Docker Compose.
+
    c. The services’ availability are checked using curl and websocat to validate the HTTP endpoints and WebSocket endpoints respectively.
+
    d. Chrome compatibility test was done against the running frontend and user service endpoint.
