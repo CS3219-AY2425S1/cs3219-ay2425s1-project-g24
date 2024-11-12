@@ -106,6 +106,21 @@ The following json format will be returned:
 ]
 ```
 
+`POST /tests`
+
+To create a new test case, run the following command:
+
+```bash
+curl -X POST http://localhost:8083/tests \
+-H "Content-Type: application/json" \
+-d '{
+"questionDocRefId": "sampleDocRefId123",
+"questionTitle": "Sample Question Title",
+"visibleTestCases": "2\nhello\nolleh\nHannah\nhannaH",
+"hiddenTestCases": "2\nHannah\nhannaH\nabcdefg\ngfedcba"
+}'
+```
+
 `POST /tests/{questionDocRefId}/execute`
 
 To execute test cases via a question ID without custom test cases, run the following command, with custom code and language:
