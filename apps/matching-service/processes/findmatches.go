@@ -158,7 +158,7 @@ func doTopicMatching(tx *redis.Tx, ctx context.Context, currentUser *models.Matc
 			continue
 		}
 
-		// Include users without any difficulty selected
+		// Include users without any topic selected
 		otherUser, err := databases.GetUserDetails(tx, otherUsername, ctx)
 		if err != nil {
 			return nil, err
