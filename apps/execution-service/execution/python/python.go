@@ -11,7 +11,7 @@ func RunPythonCode(code string, input string) (string, string, error) {
 	cmd := exec.Command(
 		"docker", "run", "--rm",
 		"-i", // allows for standard input to be passed in
-		"apps-python-sandbox",
+		"apps_python-sandbox",
 		"python", "-c", code,
 	)
 
