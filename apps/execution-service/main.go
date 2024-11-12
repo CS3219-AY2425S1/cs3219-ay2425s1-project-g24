@@ -83,7 +83,7 @@ func registerRoutes(r *chi.Mux, service *handlers.Service) {
 		// Re: CreateTest
 		// Current: Unused, since testcases are populated via script
 		// Future extension: can be created by admin
-		//r.Post("/", service.CreateTest)
+		r.Post("/", service.CreateTest)
 		r.Post("/populate", service.PopulateTests)
 
 		r.Route("/{questionDocRefId}", func(r chi.Router) {
