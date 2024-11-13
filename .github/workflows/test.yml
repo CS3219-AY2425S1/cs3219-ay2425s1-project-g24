@@ -117,6 +117,7 @@ jobs:
           EXECUTION_SERVICE_PORT: ${{ vars.EXECUTION_SERVICE_PORT }}
           MATCHING_SERVICE_TIMEOUT: ${{ vars.MATCHING_SERVICE_TIMEOUT }}
           REDIS_URL: ${{ vars.REDIS_URL }}
+          RABBITMQ_URL: ${{ vars.RABBITMQ_URL }}
           QUESTION_SERVICE_GRPC_URL: ${{ vars.QUESTION_SERVICE_GPRC_URL }}
         run: |
           cd ./apps/frontend
@@ -147,11 +148,13 @@ jobs:
           cd ../history-service
           echo "FIREBASE_CREDENTIAL_PATH=$HISTORY_FIREBASE_CREDENTIAL_PATH" >> .env
           echo "PORT=$HISTORY_SERVICE_PORT" >> .env
+          echo "RABBMITMQ_URL=$RABBITMQ_URL" >> .env
           
           cd ../execution-service
           echo "FIREBASE_CREDENTIAL_PATH=$EXECUTION_FIREBASE_CREDENTIAL_PATH" >> .env
           echo "PORT=$EXECUTION_SERVICE_PORT" >> .env
           echo "HISTORY_SERVICE_URL=$HISTORY_SERVICE_URL" >> .env
+          echo "RABBMITMQ_URL=$RABBITMQ_URL" >> .env
 
           cd ../signalling-service
           echo "PORT=$SIGNALLING_SERVICE_PORT" >> .env
@@ -198,6 +201,7 @@ jobs:
           SIGNALLING_SERVICE_URL: ${{ vars.SIGNALLING_SERVICE_URL }}
           EXECUTION_SERVICE_URL: ${{ vars.EXECUTION_SERVICE_URL }}
         run: |
+          docker ps -a
           echo "Testing Question Service..."
           curl -sSL -o /dev/null $QUESTION_SERVICE_URL && echo "Question Service is up"
           echo "Testing User Service..."
