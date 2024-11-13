@@ -13,11 +13,22 @@ export interface TestResult {
   error: string;
 }
 
+export interface AllTests {
+  visibleTests: TestData[];
+  hiddenTests: TestData[];
+}
+
 export type Test = TestResult | TestData;
 
 export const isTestResult = (test: Test): test is TestResult => {
   return "actual" in test && "passed" in test && "error" in test;
 };
+
+function parseTestcases(tests: Test[]) {
+  return tests.reduce((accum: string, t: Test) => {
+    return accum + t.input + "\n" + t.expected + "\n";
+  }, `${tests.length}\n`);
+}
 
 export interface GeneralTestResults {
   passed: number;
@@ -131,7 +142,7 @@ export const CreateTestcases = async (
   questionTitle: string,
   visibleTestcases: TestData[],
   hiddenTestcases: TestData[]
-): Promise<SubmissionResults> => {
+): Promise<any> => {
   const response = await fetch(`${EXECUTION_SERVICE_URL}tests`, {
     method: "POST",
     headers: {
@@ -140,8 +151,8 @@ export const CreateTestcases = async (
     body: JSON.stringify({
       questionDocRefId: questionDocRefId,
       questionTitle: questionTitle,
-      visibleTestCases: visibleTestcases,
-      hiddenTestCases: hiddenTestcases,
+      visibleTestCases: parseTestcases(visibleTestcases),
+      hiddenTestCases: parseTestcases(hiddenTestcases),
     }),
   });
 
@@ -154,11 +165,33 @@ export const CreateTestcases = async (
   }
 };
 
+export const ReadAllTestcases = async (
+  questionDocRefId: string
+): Promise<AllTests> => {
+  const response = await fetch(
+    `${EXECUTION_SERVICE_URL}tests/${questionDocRefId}/readall`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (response.ok) {
+    return response.json();
+  } else {
+    throw new Error(
+      `Error reading testcases: ${response.status} ${response.statusText}`
+    );
+  }
+};
+
 export const UpdateTestcases = async (
   questionDocRefId: string,
   visibleTestcases: TestData[],
   hiddenTestcases: TestData[]
-): Promise<SubmissionResults> => {
+): Promise<any> => {
   const response = await fetch(
     `${EXECUTION_SERVICE_URL}tests/${questionDocRefId}`,
     {
@@ -167,8 +200,8 @@ export const UpdateTestcases = async (
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        visibleTestCases: visibleTestcases,
-        hiddenTestCases: hiddenTestcases,
+        visibleTestCases: parseTestcases(visibleTestcases),
+        hiddenTestCases: parseTestcases(hiddenTestcases),
       }),
     }
   );
