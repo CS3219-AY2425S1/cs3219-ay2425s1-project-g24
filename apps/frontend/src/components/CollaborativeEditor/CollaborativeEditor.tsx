@@ -77,6 +77,10 @@ interface Awareness {
     submitting: boolean;
     id: number;
   };
+  editorState: {
+    language: string;
+    id: number;
+  };
 }
 
 export const usercolors = [
@@ -101,8 +105,10 @@ const CollaborativeEditor = forwardRef(
   ) => {
     const editorRef = useRef(null);
     // const providerRef = useRef<WebrtcProvider | null>(null);
-    const [selectedLanguage, setSelectedLanguage] = useState("Python");
+    const [selectedLanguage, setSelectedLanguage] = useState("python");
+    const [mounted, setMounted] = useState(false);
     let sessionEndNotified = false;
+    let sessionEndTimeout: any;
 
     const languageConf = new Compartment();
 
@@ -113,57 +119,25 @@ const CollaborativeEditor = forwardRef(
     });
 
     // Referenced: https://codemirror.net/examples/config/#dynamic-configuration
-    // const autoLanguage = EditorState.transactionExtender.of((tr) => {
-    //   if (!tr.docChanged) return null;
+    const autoLanguage = EditorState.transactionExtender.of((tr) => {
+      if (!tr.docChanged) return null;
+      const editorLanguage = localStorage.getItem("editor-language") ?? "";
+      let stateIsJs = tr.startState.facet(language) == javascriptLanguage;
+      let stateIsPython = tr.startState.facet(language) == pythonLanguage;
+      if (
+        (stateIsJs && editorLanguage.toLowerCase() === "javascript") ||
+        (stateIsPython && editorLanguage.toLowerCase() === "python")
+      )
+        return null;
 
-    //   const snippet = tr.newDoc.sliceString(0, 100);
-
-    //   // Handle code change
-    //   props.onCodeChange(tr.newDoc.toString());
-
-    //   // Test for various language
-    //   const docIsPython = /^\s*(def|class)\s/.test(snippet);
-    //   const docIsJava = /^\s*(class|public\s+static\s+void\s+main)\s/.test(
-    //     snippet
-    //   ); // Java has some problems
-    //   const docIsCpp = /^\s*(#include|namespace|int\s+main)\s/.test(snippet); // Yet to test c++
-    //   const docIsGo = /^(package|import|func|type|var|const)\s/.test(snippet);
-
-    //   let newLanguage;
-    //   let languageType;
-    //   let languageLabel;
-
-    //   if (docIsPython) {
-    //     newLanguage = python();
-    //     languageLabel = "Python";
-    //     languageType = pythonLanguage;
-    //   } else if (docIsJava) {
-    //     newLanguage = java();
-    //     languageLabel = "Java";
-    //     languageType = javaLanguage;
-    //   } else if (docIsGo) {
-    //     newLanguage = go();
-    //     languageLabel = "Go";
-    //     languageType = goLanguage;
-    //   } else if (docIsCpp) {
-    //     newLanguage = cpp();
-    //     languageLabel = "C++";
-    //     languageType = cppLanguage;
-    //   } else {
-    //     newLanguage = javascript(); // Default to JavaScript
-    //     languageLabel = "JavaScript";
-    //     languageType = javascriptLanguage;
-    //   }
-
-    //   const stateLanguage = tr.startState.facet(language);
-    //   if (languageType == stateLanguage) return null;
-
-    //   setSelectedLanguage(languageLabel);
-
-    //   return {
-    //     effects: languageConf.reconfigure(newLanguage),
-    //   };
-    // });
+      return {
+        effects: languageConf.reconfigure(
+          editorLanguage.toLowerCase() === "javascript"
+            ? javascript()
+            : python()
+        ),
+      };
+    });
 
     const [messageApi, contextHolder] = message.useMessage();
 
@@ -199,6 +173,7 @@ const CollaborativeEditor = forwardRef(
     let latestSubmissionId: number = new Date(0).getTime();
     let latestExecutingId: number = new Date(0).getTime();
     let latestSubmittingId: number = new Date(0).getTime();
+    let latestLanguageChangeId: number = new Date(0).getTime();
 
     useImperativeHandle(ref, () => ({
       endSession: () => {
@@ -219,7 +194,20 @@ const CollaborativeEditor = forwardRef(
       },
     }));
 
-    let sessionEndTimeout: any;
+    useEffect(() => {
+      localStorage.setItem("editor-language", selectedLanguage);
+
+      if (props.providerRef.current && mounted) {
+        latestLanguageChangeId = Date.now();
+        props.providerRef.current.awareness.setLocalStateField("editorState", {
+          language: selectedLanguage,
+          id: latestLanguageChangeId,
+        });
+        success(`Changed Code Editor's language to ${selectedLanguage}`);
+      } else {
+        setMounted(true);
+      }
+    }, [selectedLanguage]);
 
     useEffect(() => {
       if (process.env.NEXT_PUBLIC_SIGNALLING_SERVICE_URL === undefined) {
@@ -309,6 +297,21 @@ const CollaborativeEditor = forwardRef(
               .getStates()
               .get(clientID) as Awareness;
 
+            // New section to check for changes in language
+            if (
+              state &&
+              state.editorState &&
+              state.editorState.id !== latestLanguageChangeId
+            ) {
+              latestSubmissionId = state.editorState.id;
+              setSelectedLanguage(state.editorState.language);
+              // if (props.user === state.user.name) {
+              //   console.log("ownself update ownself");
+              // } else {
+              //   console.log("others update ownself");
+              // }
+            }
+
             if (
               state &&
               state.submissionResultsState &&
@@ -383,7 +386,7 @@ const CollaborativeEditor = forwardRef(
           basicSetup,
           languageConf.of(python()),
           // languageConf.of(javascript()),
-          // autoLanguage,
+          autoLanguage,
           yCollab(ytext, provider.awareness, { undoManager }),
           keymap.of([indentWithTab]),
           codeChangeListener,
@@ -410,10 +413,12 @@ const CollaborativeEditor = forwardRef(
           <div className="code-language">Select Language:</div>
           <Select
             className="language-select"
-            defaultValue={selectedLanguage}
+            // defaultValue={localStorage.getItem("editor-language")}
+            value={selectedLanguage}
             options={ProgrammingLanguageOptions}
-            onSelect={(val) => setSelectedLanguage(val)}
-            disabled
+            onSelect={(val) => {
+              setSelectedLanguage(val);
+            }}
           />
         </div>
         <div
