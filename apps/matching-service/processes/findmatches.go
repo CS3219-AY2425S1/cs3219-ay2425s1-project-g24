@@ -74,18 +74,38 @@ func foundMatch(tx *redis.Tx, ctx context.Context, currentUser *models.MatchRequ
 	}
 
 	var matchedTopics []string
-	for _, topic := range currentUser.Topics {
+	if len(currentUser.Topics) == 0 || len(currentUser.Topics) == 0 {
+		// Ensure that matchedTopics will not be empty unless both users are empty
+		for _, topic := range currentUser.Topics {
+			matchedTopics = append(matchedTopics, topic)
+		}
 		for _, otherTopic := range matchedUser.Topics {
-			if topic == otherTopic {
-				matchedTopics = append(matchedTopics, topic)
+			matchedTopics = append(matchedTopics, otherTopic)
+		}
+	} else {
+		for _, topic := range currentUser.Topics {
+			for _, otherTopic := range matchedUser.Topics {
+				if topic == otherTopic {
+					matchedTopics = append(matchedTopics, topic)
+				}
 			}
 		}
 	}
 	var matchedDifficulties []string
-	for _, topic := range currentUser.Difficulties {
-		for _, otherTopic := range matchedUser.Difficulties {
-			if topic == otherTopic {
-				matchedDifficulties = append(matchedDifficulties, topic)
+	if len(currentUser.Difficulties) == 0 || len(currentUser.Difficulties) == 0 {
+		// Ensure that matchedDifficulties will not be empty unless both users are empty
+		for _, diff := range currentUser.Difficulties {
+			matchedDifficulties = append(matchedDifficulties, diff)
+		}
+		for _, otherDiff := range matchedUser.Difficulties {
+			matchedDifficulties = append(matchedDifficulties, otherDiff)
+		}
+	} else {
+		for _, diff := range currentUser.Difficulties {
+			for _, otherDiff := range matchedUser.Difficulties {
+				if diff == otherDiff {
+					matchedDifficulties = append(matchedDifficulties, diff)
+				}
 			}
 		}
 	}
@@ -200,7 +220,7 @@ func doDifficultyMatching(tx *redis.Tx, ctx context.Context, currentUser *models
 		if err != nil {
 			return nil, err
 		}
-		if len(otherUser.Topics) == 0 {
+		if len(otherUser.Difficulties) == 0 {
 			foundUsers = append(foundUsers, otherUsername)
 		}
 
