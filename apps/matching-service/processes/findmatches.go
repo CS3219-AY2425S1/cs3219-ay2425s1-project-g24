@@ -74,7 +74,7 @@ func foundMatch(tx *redis.Tx, ctx context.Context, currentUser *models.MatchRequ
 	}
 
 	var matchedTopics []string
-	if len(currentUser.Topics) == 0 || len(currentUser.Topics) == 0 {
+	if len(currentUser.Topics) == 0 || len(matchedUser.Topics) == 0 {
 		// Ensure that matchedTopics will not be empty unless both users are empty
 		for _, topic := range currentUser.Topics {
 			matchedTopics = append(matchedTopics, topic)
@@ -92,7 +92,7 @@ func foundMatch(tx *redis.Tx, ctx context.Context, currentUser *models.MatchRequ
 		}
 	}
 	var matchedDifficulties []string
-	if len(currentUser.Difficulties) == 0 || len(currentUser.Difficulties) == 0 {
+	if len(currentUser.Difficulties) == 0 || len(matchedUser.Difficulties) == 0 {
 		// Ensure that matchedDifficulties will not be empty unless both users are empty
 		for _, diff := range currentUser.Difficulties {
 			matchedDifficulties = append(matchedDifficulties, diff)
