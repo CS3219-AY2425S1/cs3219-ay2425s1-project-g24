@@ -129,6 +129,15 @@ services:
       - apps_network
     container_name: python-sandbox
 
+  node-sandbox:
+    build:
+      context: ./execution-service/execution/node
+      dockerfile: Dockerfile
+    networks:
+      - apps_network
+    container_name: node-sandbox
+    stdin_open: true      # Enables interactive mode for passing standard input
+
 networks:
   apps_network:
 

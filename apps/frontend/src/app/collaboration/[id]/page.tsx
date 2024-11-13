@@ -71,7 +71,7 @@ export default function CollaborationPage(props: CollaborationProps) {
   const [complexity, setComplexity] = useState<string | undefined>(undefined);
   const [categories, setCategories] = useState<string[]>([]); // Store the selected filter categories
   const [description, setDescription] = useState<string | undefined>(undefined);
-  const [selectedLanguage, setSelectedLanguage] = useState("Python"); // State to hold the selected language item
+  const [selectedLanguage, setSelectedLanguage] = useState("python"); // State to hold the selected language item
 
   // Session states
   const [collaborationId, setCollaborationId] = useState<string | undefined>(
@@ -232,22 +232,29 @@ export default function CollaborationPage(props: CollaborationProps) {
     localStorage.setItem("visibleTestResults", JSON.stringify(data.visibleTestResults));
   };
 
+  const updateLangauge = (data: string) => {
+    setSelectedLanguage(data);
+  }
+
   const handleRunTestCases = async () => {
     if (!questionDocRefId) {
       throw new Error("Question ID not found");
     }
     setIsLoadingTestCase(true);
     sendExecutingStateToMatchedUser(true);
-    const data = await ExecuteVisibleAndCustomTests(questionDocRefId, {
-      code: code,
-      language: selectedLanguage,
-      customTestCases: "",
-    });
-    updateExecutionResults(data);
-    infoMessage("Test cases executed. Review the results below.");
-    sendExecutionResultsToMatchedUser(data);
-    setIsLoadingTestCase(false);
-    sendExecutingStateToMatchedUser(false);
+    try {
+      const data = await ExecuteVisibleAndCustomTests(questionDocRefId, {
+        code: code,
+        language: selectedLanguage,
+        customTestCases: "",
+      });
+      updateExecutionResults(data);
+      infoMessage("Test cases executed. Review the results below.");
+      sendExecutionResultsToMatchedUser(data);
+    } finally {
+      setIsLoadingTestCase(false);
+      sendExecutingStateToMatchedUser(false);
+    }
   };
 
   const handleSubmitCode = async () => {
@@ -256,25 +263,28 @@ export default function CollaborationPage(props: CollaborationProps) {
     }
     setIsLoadingSubmission(true);
     sendSubmittingStateToMatchedUser(true);
-    const data = await ExecuteVisibleAndHiddenTestsAndSubmit(questionDocRefId, {
-      code: code,
-      language: selectedLanguage,
-      user: currentUser ?? "",
-      matchedUser: matchedUser ?? "",
-      matchedTopics: matchedTopics ?? [],
-      title: questionTitle ?? "",
-      questionDifficulty: complexity ?? "",
-      questionTopics: categories,
-    });
-    updateExecutionResults({
-      visibleTestResults: data.visibleTestResults,
-      customTestResults: [],
-    });
-    updateSubmissionResults(data);
-    sendSubmissionResultsToMatchedUser(data);
-    successMessage("Code saved successfully!");
-    setIsLoadingSubmission(false);
-    sendSubmittingStateToMatchedUser(false);
+    try {
+      const data = await ExecuteVisibleAndHiddenTestsAndSubmit(questionDocRefId, {
+        code: code,
+        language: selectedLanguage,
+        user: currentUser ?? "",
+        matchedUser: matchedUser ?? "",
+        matchedTopics: matchedTopics ?? [],
+        title: questionTitle ?? "",
+        questionDifficulty: complexity ?? "",
+        questionTopics: categories,
+      });
+      updateExecutionResults({
+        visibleTestResults: data.visibleTestResults,
+        customTestResults: [],
+      });
+      updateSubmissionResults(data);
+      sendSubmissionResultsToMatchedUser(data);
+      successMessage("Code saved successfully!");
+    } finally {
+      setIsLoadingSubmission(false);
+      sendSubmittingStateToMatchedUser(false);
+    }
   };
 
   const handleCodeChange = (code: string) => {
@@ -505,7 +515,7 @@ export default function CollaborationPage(props: CollaborationProps) {
                     ref={editorRef}
                     user={currentUser}
                     collaborationId={collaborationId}
-                    language={selectedLanguage}
+                    updateLanguage={updateLangauge}
                     setMatchedUser={setMatchedUser}
                     handleCloseCollaboration={handleCloseCollaboration}
                     providerRef={providerRef}

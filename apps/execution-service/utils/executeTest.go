@@ -2,6 +2,7 @@ package utils
 
 import (
 	"execution-service/constants"
+	"execution-service/execution/node"
 	"execution-service/execution/python"
 	"execution-service/models"
 	"fmt"
@@ -15,6 +16,8 @@ func ExecuteVisibleAndCustomTests(code models.Code, test models.Test) (models.Ex
 	case constants.PYTHON:
 		testResults, err = getVisibleAndCustomTestResults(code, test, python.RunPythonCode)
 		break
+	case constants.JAVASCRIPT:
+		testResults, err = getVisibleAndCustomTestResults(code, test, node.RunJavaScriptCode)
 	default:
 		return models.ExecutionResults{}, fmt.Errorf("unsupported language: %s", code.Language)
 	}
@@ -33,6 +36,8 @@ func ExecuteVisibleAndHiddenTests(code models.Code, test models.Test) (models.Su
 	case constants.PYTHON:
 		testResults, err = getVisibleAndHiddenTestResults(code, test, python.RunPythonCode)
 		break
+	case constants.JAVASCRIPT:
+		testResults, err = getVisibleAndHiddenTestResults(code, test, node.RunJavaScriptCode)
 	default:
 		return models.SubmissionResults{}, fmt.Errorf("unsupported language: %s", code.Language)
 	}
