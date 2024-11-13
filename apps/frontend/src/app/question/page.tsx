@@ -14,12 +14,17 @@ import {
   Tag,
   Modal,
   Form,
+  Tabs,
+  Checkbox,
+  Tooltip,
+  Card,
 } from "antd";
 import { Content } from "antd/es/layout/layout";
 import {
   DeleteOutlined,
   EditOutlined,
   PlusCircleOutlined,
+  PlusOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
 import "./styles.scss";
@@ -40,6 +45,7 @@ import {
 import Link from "next/link";
 import TextArea from "antd/es/input/TextArea";
 import { ValidateUser, VerifyTokenResponseType } from "../services/user";
+import TabPane from "antd/es/tabs/TabPane";
 
 /**
  * defines the State of the page whe a user is deleing an object. Has 3 general states:
@@ -120,10 +126,9 @@ export default function QuestionListPage() {
   const [isAdmin, setIsAdmin] = useState<boolean | undefined>(undefined);
 
   useLayoutEffect(() => {
-    ValidateUser()
-      .then((data: VerifyTokenResponseType) => {
-        setIsAdmin(data.data.isAdmin);
-      })
+    ValidateUser().then((data: VerifyTokenResponseType) => {
+      setIsAdmin(data.data.isAdmin);
+    });
   }, []);
 
   const handleEditClick = (index: number, question: Question) => {
@@ -248,6 +253,34 @@ export default function QuestionListPage() {
     return () => clearTimeout(timeout);
   }, [search]);
 
+  const [visibleTests, setVisibleTests] = useState<any>([
+    { key: "1", title: "Visible Test 1" },
+  ]);
+  const [hiddenTests, setHiddenTests] = useState<any>([]); // FIXME: fix the type!!
+  const [tabIndex, setTabIndex] = useState(2);
+
+  const handleAddVisibleTest = () => {
+    const newKey = `${Date.now()}`; // Use unique timestamp as key
+    setVisibleTests([...visibleTests, { key: newKey }]);
+  };
+
+  const handleAddHiddenTest = () => {
+    const newKey = `${Date.now()}`; // Use unique timestamp as key
+    setHiddenTests([...hiddenTests, { key: newKey }]);
+  };
+
+  const handleRemoveVisibleTest = (targetKey: string) => {
+    if (visibleTests.length > 1) {
+      setVisibleTests(
+        visibleTests.filter((test: any) => test.key !== targetKey)
+      );
+    }
+  };
+
+  const handleRemoveHiddenTest = (targetKey: string) => {
+    setHiddenTests(hiddenTests.filter((test: any) => test.key !== targetKey));
+  };
+
   // Table column specification
   var columns: TableProps<Question>["columns"];
   if (isAdmin) {
@@ -343,7 +376,7 @@ export default function QuestionListPage() {
                     },
                   ]}
                 >
-                  <TextArea name="description" />
+                  <TextArea name="description" rows={12} />
                 </Form.Item>
                 <Form.Item
                   name="complexity"
@@ -395,6 +428,93 @@ export default function QuestionListPage() {
                     allowClear
                   />
                 </Form.Item>
+                <Tabs defaultActiveKey="1">
+                  {/* Visible Tests Tab */}
+                  <TabPane tab="Visible Testcases" key="1">
+                    <Tabs
+                      type="editable-card"
+                      onEdit={(targetKey, action) =>
+                        action === "add"
+                          ? handleAddVisibleTest()
+                          : handleRemoveVisibleTest(targetKey.toString())
+                      }
+                    >
+                      {visibleTests.map((test: any, index: number) => (
+                        <TabPane
+                          tab={`Test ${index + 1}`} // Dynamic numbering based on index
+                          key={test.key}
+                          closable={visibleTests.length > 1} // Restrict removing if only one visible test
+                        >
+                          <Form.Item
+                            label="Input"
+                            name={`input_${test.key}`}
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please enter input value",
+                              },
+                            ]}
+                          >
+                            <Input placeholder="Input" />
+                          </Form.Item>
+                          <Form.Item
+                            label="Output"
+                            name={`output_${test.key}`}
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please enter output value",
+                              },
+                            ]}
+                          >
+                            <Input placeholder="Output" />
+                          </Form.Item>
+                        </TabPane>
+                      ))}
+                    </Tabs>
+                  </TabPane>
+
+                  {/* Hidden Tests Tab */}
+                  <TabPane tab="Hidden Testcases" key="2">
+                    <Tabs
+                      type="editable-card"
+                      onEdit={(targetKey, action) =>
+                        action === "add"
+                          ? handleAddHiddenTest()
+                          : handleRemoveHiddenTest(targetKey.toString())
+                      }
+                    >
+                      {hiddenTests.map((test: any, index: number) => (
+                        <TabPane tab={`Test ${index + 1}`} key={test.key}>
+                          <Form.Item
+                            label="Input"
+                            name={`input_${test.key}`}
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please enter input value",
+                              },
+                            ]}
+                          >
+                            <Input placeholder="Input" />
+                          </Form.Item>
+                          <Form.Item
+                            label="Output"
+                            name={`output_${test.key}`}
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please enter output value",
+                              },
+                            ]}
+                          >
+                            <Input placeholder="Output" />
+                          </Form.Item>
+                        </TabPane>
+                      ))}
+                    </Tabs>
+                  </TabPane>
+                </Tabs>
                 <Form.Item
                   style={{ display: "flex", justifyContent: "flex-end" }}
                 >
@@ -596,7 +716,7 @@ export default function QuestionListPage() {
                           },
                         ]}
                       >
-                        <TextArea name="description" />
+                        <TextArea name="description" rows={12} />
                       </Form.Item>
                       <Form.Item
                         name="complexity"
