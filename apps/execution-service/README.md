@@ -121,6 +121,21 @@ curl -X POST http://localhost:8083/tests \
 }'
 ```
 
+`PUT /tests/{questionDocRefId}`
+
+To update an existing test case from an existing question, run the following command:
+
+```bash
+curl -X PUT http://localhost:8083/tests/{questionDocRefId} \
+-H "Content-Type: application/json" \
+-d '{
+"visibleTestCases": "2\nhello\nolleh\nHannah\nhannaH",
+"hiddenTestCases": "2\nHannah\nhannaH\nabcdefg\ngfedcba"
+}'
+```
+
+```bash
+
 `POST /tests/{questionDocRefId}/execute`
 
 To execute test cases via a question ID without custom test cases, run the following command, with custom code and language:

@@ -40,6 +40,21 @@ func (s *Service) CreateTest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check if a test already exists for the question
+	iter := s.Client.Collection("tests").Where("questionDocRefId", "==", test.QuestionDocRefId).Documents(ctx)
+	for {
+		_, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			http.Error(w, "Error fetching test", http.StatusInternalServerError)
+			return
+		}
+		http.Error(w, "Test already exists for the question", http.StatusConflict)
+		return
+	}
+
 	// Save test to Firestore
 	docRef, _, err := s.Client.Collection("tests").Add(ctx, map[string]interface{}{
 		"questionDocRefId": test.QuestionDocRefId,

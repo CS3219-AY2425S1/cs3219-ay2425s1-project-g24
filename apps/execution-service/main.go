@@ -90,7 +90,7 @@ func registerRoutes(r *chi.Mux, service *handlers.Service) {
 			// Re: UpdateTest, DeleteTest
 			// Current: Unused, since testcases are executed within service and not exposed
 			// Future extension: can be read by admin to view testcases
-			//r.Put("/", service.UpdateTest)
+			r.Put("/", service.UpdateTest)
 			//r.Delete("/", service.DeleteTest)
 			r.Get("/", service.ReadVisibleTests)
 			r.Post("/execute", service.ExecuteVisibleAndCustomTests)
