@@ -126,7 +126,7 @@ describe("GetQuestions", () => {
 
     });
     
-    it("gets all questions on the 2nd page with (2) call", async () => {
+    it("formats (page=2) params correctly", async () => {
         
         const res = await GetQuestions(2)
 
@@ -138,7 +138,7 @@ describe("GetQuestions", () => {
         }]])
     });
     
-    it("gets all questions on the 2nd page with (limit=3) call", async () => {
+    it("formats (limit=3) params correctly", async () => {
         
         await GetQuestions(undefined, 3)
 
@@ -150,7 +150,7 @@ describe("GetQuestions", () => {
         }]])
     });
     
-    it("gets all questions on the 2nd page with (limit=3) call", async () => {
+    it("formats (difficulty asc) params correctly", async () => {
         
         await GetQuestions(undefined, undefined, "difficulty asc")
 
@@ -162,7 +162,7 @@ describe("GetQuestions", () => {
         }]])
     });
     
-    it("gets all questions on the 2nd page with (limit=3) call", async () => {
+    it("formats ([\"easy\", \"hard\"]) params correctly", async () => {
         
         await GetQuestions(undefined, undefined, undefined, ["easy", "hard"])
 
@@ -174,7 +174,7 @@ describe("GetQuestions", () => {
         }]])
     });
     
-    it("formats urls for categories", async () => {
+    it("formats cat params correctly", async () => {
         
         await GetQuestions(undefined, undefined, undefined, undefined, ["CatA", "CatB"])
 
@@ -189,7 +189,7 @@ describe("GetQuestions", () => {
         ]])
     });
     
-    it("formats url for title", async () => {
+    it("formats title params correctly", async () => {
         
         await GetQuestions(undefined, undefined, undefined, undefined, undefined, "The Title Name")
 
@@ -210,9 +210,11 @@ describe("GetSingleQuestion", () => {
     const DOCREF = "mockdocref";
     beforeEach(() => {
         global.fetch = jest.fn().mockResolvedValue({
+            ok: true, // Ensure `ok` is true to hit the success branch
             async json() {
                 return QUESTIONS[0]
-            }
+            },
+            text: () => Promise.resolve('mocked response'),
         });
     });
 
@@ -238,6 +240,7 @@ describe("CreateQuestion", () => {
         global.fetch = jest.fn().mockResolvedValue({
             status: 200,
             statusText: "OK",
+            ok: true, // Ensure `ok` is true to hit the success branch
             async json() {
                 return createdQuestion
             }

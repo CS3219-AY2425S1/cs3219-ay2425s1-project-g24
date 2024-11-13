@@ -1,5 +1,59 @@
 # Execution Service
 
+The Execution Service provides backend functionality for running and validating code executions or submissions within a coding platform. It enables users to execute code against test cases and receive feedback on the correctness of their solutions.
+
+The Execution Service incorporates a code execution mechanism designed to run user-submitted solutions within an isolated, sandboxed environment. This approach enhances security by preventing arbitrary code from interacting with the host system directly and allows for performance monitoring
+
+### Technology Stack
+
+- Golang (Go): Statically typed, compiled language with low latency. Fast and efficient processing is ideal for high-read, high-write environments like in Execution Service, when many users run tests or submit tests.
+- Rest Server: chi router was utilized which supports CORS, logging and timeout via middlewares. It is stateless, which reduces coupling and enhances scalability and reliability, simplicity and flexibility. For example, clients may make requests to different server instances when scaled.
+- Firebase Firestore: NoSQL Document database that is designed for automatic horizontal scaling and schema-less design that allows for flexibility as number of tests increases or more users run tests.
+- Docker: used to containerize the Execution Service to simplify deployment. Additionally used to provide a sandboxed execution environment for user-submitted code, ensuring security by limiting code access to the host system and managing dependencies independently.
+
+### Execution Process
+
+For execution of user code (running of test cases without submission), only visible (public) and custom test cases are executed.
+
+![Diagram of code execution process](../../docs/exeuction_process.png)
+
+### Submission Process
+
+For submission of user code, both visible (public) and hidden testcases are executed, before calling the history-service API to submit the submission data, code and test results.
+
+![Diagram of code submission process](../../docs/submission_process.png)
+
+### Design Decisions
+
+1. **Docker Containerisation**
+   a. Upon receiving a code execution request, the service dynamically creates a Docker container with a controlled environment tailored to Python
+   b. The Docker container is set up with only the minimal permissions and resources needed to execute the code, restricting the execution environment to reduce risk
+   c. This containerized environment is automatically destroyed after execution, ensuring no residual data or state remains between executions
+
+2. **Security and Isolation**
+   a. Containers provide isolation from the host system, limiting any interaction between user code and the underlying infrastructure
+   b. Only essential files and libraries required for code execution are included, reducing potential attack surfaces within each container. The sandboxed, container-based execution system provides a secure and efficient way to run user code submissions.
+
+The sandboxed, container-based execution system provides a secure and efficient way to run user code submissions.
+
+### Communication between Execution and History Service
+
+The communication between the Execution service and the History service is implemented through a RabbitMQ Message Queue. RabbitMQ is ideal for message queues in microservices due to its reliability, flexible routing, and scalability. It ensures messages aren’t lost through durable queues and supports complex routing to handle diverse messaging needs.
+
+Asynchronous communication was chosen as a user’s submission history did not need to be updated immediately. Instead of waiting for a response, the Execution Service can put the message in a queue and continue processing other requests.
+
+![RabbitMQ Message Queue](./../../docs/rabbit_mq_queue.png)
+
+A message queue allows services to communicate without depending on each other's availability. The Execution Service can send a message to the queue, and the History Service can process it when it’s ready. This decoupling promotes loose coupling and reduces dependencies between services, which helps maintain a robust and adaptable system.
+
+---
+
+## Setup
+
+### Prerequisites
+
+Ensure you have Go installed on your machine.
+
 ### Installation
 
 1. Install dependencies:
@@ -61,10 +115,10 @@ The server will be available at http://localhost:8083.
 
 ## API Endpoints
 
-- `POST /tests/populate`
-- `GET /tests/{questionDocRefId}/`
-- `POST /tests/{questionDocRefId}/execute`
-- `POST /tests/{questionDocRefId}/submit`
+- `POST: /tests/populate`: Deletes and repopulates all tests in Firebase
+- `GET: /{questionDocRefId}`: Reads the public testcases for the question, identified by the question reference ID
+- `POST: /{questionDocRefId}/execute`: Executes the public testcases for the question, identified by the question reference ID
+- `POST: /{questionDocRefId}/submit`: Executes the public and hidden testcases for the question, identified by the question reference ID, and submits the code submission to History Service
 
 ## Managing Firebase
 

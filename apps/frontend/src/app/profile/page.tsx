@@ -4,17 +4,17 @@ import {
   Avatar,
   Button,
   Col,
-  Divider,
   Form,
   Input,
   Layout,
   message,
   Row,
+  Tooltip,
 } from "antd";
 import { Content } from "antd/es/layout/layout";
 import "./styles.scss";
 import { EditOutlined, SaveOutlined } from "@ant-design/icons";
-import { useEffect, useState, useLayoutEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   UpdateUser,
   ValidateUser,
@@ -117,14 +117,14 @@ const ProfilePage = (props: ProfilePageProps): JSX.Element => {
                   <Form.Item
                     name="username"
                     label="Username"
+                    tooltip="Unmodifable to prevent confusion in other users history when your username changes"
                     rules={[
                       {
-                        required: true,
                         message: "Please enter valid username!",
                       },
                     ]}
                   >
-                    <Input name="username" />
+                    <Input name="username" disabled />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
@@ -144,7 +144,11 @@ const ProfilePage = (props: ProfilePageProps): JSX.Element => {
               </Row>
               <Row gutter={16}>
                 <Col span={12}>
-                  <Form.Item name="password" label="Password">
+                  <Form.Item
+                    name="password"
+                    label="Password"
+                    tooltip="Password is not updated if this field is left empty"
+                  >
                     <Input.Password
                       name="password"
                       type="password"

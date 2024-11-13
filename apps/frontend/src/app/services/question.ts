@@ -98,8 +98,13 @@ export const GetSingleQuestion = async (docRef: string): Promise<Question> => {
       }
     }
   );
-  const data = await response.json();
-  return data;
+  if (response.ok) {
+    return response.json();
+  } else {
+    throw new Error(
+      `Error reading question: ${await response.text()}`
+    );
+  }
 };
 
 // Upload single question (TODO: Sean)
@@ -115,7 +120,7 @@ export const CreateQuestion = async (
     body: JSON.stringify(question),
   });
 
-  if (response.status === 200) {
+  if (response.ok) {
     return response.json();
   } else {
     throw new Error(
@@ -140,7 +145,7 @@ export const EditQuestion = async (
     }
   );
 
-  if (response.status === 200) {
+  if (response.ok) {
     return response.json();
   } else {
     throw new Error(

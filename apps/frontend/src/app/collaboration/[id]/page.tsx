@@ -12,6 +12,7 @@ import {
   Tag,
   Typography,
   Spin,
+  Tooltip,
 } from "antd";
 import { Content } from "antd/es/layout/layout";
 import "./styles.scss";
@@ -70,7 +71,7 @@ export default function CollaborationPage(props: CollaborationProps) {
   const [complexity, setComplexity] = useState<string | undefined>(undefined);
   const [categories, setCategories] = useState<string[]>([]); // Store the selected filter categories
   const [description, setDescription] = useState<string | undefined>(undefined);
-  const [selectedLanguage, setSelectedLanguage] = useState("Python"); // State to hold the selected language item
+  const [selectedLanguage, setSelectedLanguage] = useState("python"); // State to hold the selected language item
 
   // Session states
   const [collaborationId, setCollaborationId] = useState<string | undefined>(
@@ -168,6 +169,13 @@ export default function CollaborationPage(props: CollaborationProps) {
     });
   };
 
+  const errorMessage = (message: string) => {
+    messageApi.open({
+      type: "error",
+      content: message,
+    });
+  };
+
   const sendSubmissionResultsToMatchedUser = (data: SubmissionResults) => {
     if (!providerRef.current) {
       throw new Error("Provider not initialized");
@@ -209,16 +217,24 @@ export default function CollaborationPage(props: CollaborationProps) {
   };
 
   const updateSubmissionResults = (data: SubmissionResults) => {
-    setSubmissionHiddenTestResultsAndStatus({
+    const submissionHiddenTestResultsAndStatus: SubmissionHiddenTestResultsAndStatus = {
       hiddenTestResults: data.hiddenTestResults,
       status: data.status,
-    });
+    }
+    setSubmissionHiddenTestResultsAndStatus(submissionHiddenTestResultsAndStatus);
+    localStorage.setItem("submissionHiddenTestResultsAndStatus", JSON.stringify(submissionHiddenTestResultsAndStatus));
     setVisibleTestCases(data.visibleTestResults);
+    localStorage.setItem("visibleTestResults", JSON.stringify(data.visibleTestResults));
   };
 
   const updateExecutionResults = (data: ExecutionResults) => {
     setVisibleTestCases(data.visibleTestResults);
+    localStorage.setItem("visibleTestResults", JSON.stringify(data.visibleTestResults));
   };
+
+  const updateLangauge = (data: string) => {
+    setSelectedLanguage(data);
+  }
 
   const handleRunTestCases = async () => {
     if (!questionDocRefId) {
@@ -226,16 +242,19 @@ export default function CollaborationPage(props: CollaborationProps) {
     }
     setIsLoadingTestCase(true);
     sendExecutingStateToMatchedUser(true);
-    const data = await ExecuteVisibleAndCustomTests(questionDocRefId, {
-      code: code,
-      language: selectedLanguage,
-      customTestCases: "",
-    });
-    setVisibleTestCases(data.visibleTestResults);
-    infoMessage("Test cases executed. Review the results below.");
-    sendExecutionResultsToMatchedUser(data);
-    setIsLoadingTestCase(false);
-    sendExecutingStateToMatchedUser(false);
+    try {
+      const data = await ExecuteVisibleAndCustomTests(questionDocRefId, {
+        code: code,
+        language: selectedLanguage,
+        customTestCases: "",
+      });
+      updateExecutionResults(data);
+      infoMessage("Test cases executed. Review the results below.");
+      sendExecutionResultsToMatchedUser(data);
+    } finally {
+      setIsLoadingTestCase(false);
+      sendExecutingStateToMatchedUser(false);
+    }
   };
 
   const handleSubmitCode = async () => {
@@ -244,25 +263,28 @@ export default function CollaborationPage(props: CollaborationProps) {
     }
     setIsLoadingSubmission(true);
     sendSubmittingStateToMatchedUser(true);
-    const data = await ExecuteVisibleAndHiddenTestsAndSubmit(questionDocRefId, {
-      code: code,
-      language: selectedLanguage,
-      user: currentUser ?? "",
-      matchedUser: matchedUser ?? "",
-      matchedTopics: matchedTopics ?? [],
-      title: questionTitle ?? "",
-      questionDifficulty: complexity ?? "",
-      questionTopics: categories,
-    });
-    setVisibleTestCases(data.visibleTestResults);
-    setSubmissionHiddenTestResultsAndStatus({
-      hiddenTestResults: data.hiddenTestResults,
-      status: data.status,
-    });
-    sendSubmissionResultsToMatchedUser(data);
-    successMessage("Code saved successfully!");
-    setIsLoadingSubmission(false);
-    sendSubmittingStateToMatchedUser(false);
+    try {
+      const data = await ExecuteVisibleAndHiddenTestsAndSubmit(questionDocRefId, {
+        code: code,
+        language: selectedLanguage,
+        user: currentUser ?? "",
+        matchedUser: matchedUser ?? "",
+        matchedTopics: matchedTopics ?? [],
+        title: questionTitle ?? "",
+        questionDifficulty: complexity ?? "",
+        questionTopics: categories,
+      });
+      updateExecutionResults({
+        visibleTestResults: data.visibleTestResults,
+        customTestResults: [],
+      });
+      updateSubmissionResults(data);
+      sendSubmissionResultsToMatchedUser(data);
+      successMessage("Code saved successfully!");
+    } finally {
+      setIsLoadingSubmission(false);
+      sendSubmittingStateToMatchedUser(false);
+    }
   };
 
   const handleCodeChange = (code: string) => {
@@ -283,6 +305,11 @@ export default function CollaborationPage(props: CollaborationProps) {
     const currentUser: string = localStorage.getItem("user") ?? "";
     const matchedTopics: string[] =
       localStorage.getItem("matchedTopics")?.split(",") ?? [];
+      const submissionHiddenTestResultsAndStatus: SubmissionHiddenTestResultsAndStatus | undefined = 
+      localStorage.getItem("submissionHiddenTestResultsAndStatus")
+        ? JSON.parse(localStorage.getItem("submissionHiddenTestResultsAndStatus") as string)
+        : undefined;
+    const visibleTestCases: Test[] = JSON.parse(localStorage.getItem("visibleTestResults") ?? "[]") ?? [];
 
     // Set states from localstorage
     setCollaborationId(collabId);
@@ -290,6 +317,8 @@ export default function CollaborationPage(props: CollaborationProps) {
     setCurrentUser(currentUser);
     setMatchedTopics(matchedTopics);
     setQuestionDocRefId(questionDocRefId);
+    setSubmissionHiddenTestResultsAndStatus(submissionHiddenTestResultsAndStatus);
+    setVisibleTestCases(visibleTestCases);
 
     GetSingleQuestion(questionDocRefId).then((data: Question) => {
       setQuestionTitle(`${data.id}. ${data.title}`);
@@ -298,9 +327,13 @@ export default function CollaborationPage(props: CollaborationProps) {
       setDescription(data.description);
     });
 
-    GetVisibleTests(questionDocRefId).then((data: Test[]) => {
-      setVisibleTestCases(data);
-    });
+    if (visibleTestCases.length == 0) {
+      GetVisibleTests(questionDocRefId).then((data: Test[]) => {
+        setVisibleTestCases(data);
+      }).catch((e) => {
+        errorMessage(e.message);
+      });
+    }
 
     // Start stopwatch
     startStopwatch();
@@ -384,6 +417,9 @@ export default function CollaborationPage(props: CollaborationProps) {
     localStorage.removeItem("collabId");
     localStorage.removeItem("questionDocRefId");
     localStorage.removeItem("matchedTopics");
+    localStorage.removeItem("submissionHiddenTestResultsAndStatus");
+    localStorage.removeItem("visibleTestResults");
+    localStorage.removeItem("editor-language"); // Remove editor language type when session closed
   };
 
   return (
@@ -479,7 +515,7 @@ export default function CollaborationPage(props: CollaborationProps) {
                     ref={editorRef}
                     user={currentUser}
                     collaborationId={collaborationId}
-                    language={selectedLanguage}
+                    updateLanguage={updateLangauge}
                     setMatchedUser={setMatchedUser}
                     handleCloseCollaboration={handleCloseCollaboration}
                     providerRef={providerRef}
@@ -492,7 +528,9 @@ export default function CollaborationPage(props: CollaborationProps) {
                   />
                 )}
                 <div className="hidden-test-results">
-                  <InfoCircleFilled className="hidden-test-icon" />
+                  <Tooltip title="Status applies only to this session">
+                    <InfoCircleFilled className="hidden-test-icon" />
+                  </Tooltip>
                   <Typography.Text
                     strong
                     style={{

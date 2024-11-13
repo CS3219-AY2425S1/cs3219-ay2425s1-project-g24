@@ -70,71 +70,71 @@ export interface Submission {
 export const GetVisibleTests = async (
   questionDocRefId: string
 ): Promise<TestData[]> => {
-  const response = await fetch(
-    `${EXECUTION_SERVICE_URL}tests/${questionDocRefId}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
-
-  if (response.status === 200) {
-    return response.json();
-  } else {
-    throw new Error(
-      `Error fetching test cases: ${response.status} ${response.statusText}`
+    const response = await fetch(
+        `${EXECUTION_SERVICE_URL}tests/${questionDocRefId}`,
+        {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        }
     );
-  }
+
+    if (response.ok) {
+        return response.json();
+    } else {
+        throw new Error(
+            `Error fetching test cases: ${await response.text()}`
+        );
+    }
 };
 
 export const ExecuteVisibleAndCustomTests = async (
   questionDocRefId: string,
   code: Code
 ): Promise<ExecutionResults> => {
-  const response = await fetch(
-    `${EXECUTION_SERVICE_URL}tests/${questionDocRefId}/execute`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(code),
-    }
-  );
-
-  if (response.status === 200) {
-    return response.json();
-  } else {
-    throw new Error(
-      `Error executing code: ${response.status} ${response.statusText}`
+    const response = await fetch(
+        `${EXECUTION_SERVICE_URL}tests/${questionDocRefId}/execute`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(code),
+        }
     );
-  }
+
+    if (response.ok) {
+        return response.json();
+    } else {
+        throw new Error(
+            `Error executing code: ${response.status} ${response.statusText}`
+        );
+    }
 };
 
 export const ExecuteVisibleAndHiddenTestsAndSubmit = async (
   questionDocRefId: string,
   collaboration: Submission
 ): Promise<SubmissionResults> => {
-  const response = await fetch(
-    `${EXECUTION_SERVICE_URL}tests/${questionDocRefId}/submit`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(collaboration),
-    }
-  );
-
-  if (response.status === 200) {
-    return response.json();
-  } else {
-    throw new Error(
-      `Error submitting code: ${response.status} ${response.statusText}`
+    const response = await fetch(
+        `${EXECUTION_SERVICE_URL}tests/${questionDocRefId}/submit`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(collaboration),
+        }
     );
-  }
+
+    if (response.ok) {
+        return response.json();
+    } else {
+        throw new Error(
+            `Error submitting code: ${response.status} ${response.statusText}`
+        );
+    }
 };
 
 export const CreateTestcases = async (

@@ -70,6 +70,7 @@ const Header = (props: HeaderProps): JSX.Element => {
       onClick: () => {
         // Clear away the previously stored jwt token in localstorage
         deleteToken();
+        localStorage.clear();
         // Redirect user to login page
         push("/login");
       },
