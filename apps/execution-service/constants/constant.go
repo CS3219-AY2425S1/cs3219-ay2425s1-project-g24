@@ -1,11 +1,11 @@
 package constants
 
 const (
-	JAVA       = "Java"
-	PYTHON     = "Python"
-	GOLANG     = "Golang"
-	JAVASCRIPT = "Javascript"
-	CPP        = "C++"
+	JAVA       = "java"
+	PYTHON     = "python"
+	GOLANG     = "golang"
+	JAVASCRIPT = "javascript"
+	CPP        = "c++"
 )
 
 const (
@@ -17,6 +17,6 @@ var IS_VALID_LANGUAGE = map[string]bool{
 	PYTHON: true,
 	//JAVA:       true,
 	//GOLANG:     true,
-	//JAVASCRIPT: true,
+	JAVASCRIPT: true,
 	//CPP:        true,
 }
