@@ -96,6 +96,11 @@ This command will stop and remove the containers, networks, and volumes created 
 
 - **Port Conflicts**: If you encounter port conflicts, ensure the host ports specified in docker-compose.yml (e.g., 3000:3000) are not in use by other applications.
 - **Environment Variables Not Loaded**: Ensure the `.env` files are in the correct directories as found in the `docker-compose.yml` file.
+- **Command execution failed**: When you try running test cases or submitting the code in the collaborative environment, if you encounter the following error message:
+    ```bash
+  Command execution failed: Unable to find image 'apps-python-sandbox:latest' locally docker: Error response from daemon: pull access denied for apps-python-sandbox, repository does not exist or may require 'docker login': denied: requested access to the resource is denied. See 'docker run --help'. : exit status 125
+    ```
+  Ensure that you have **Docker Compose V2** enabled for your Docker Desktop application. Please refer to the Docker Compose setup guide above to enable it locally.
 
 ### Known Issues
 
