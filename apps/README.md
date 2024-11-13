@@ -45,6 +45,12 @@ In the `./apps` directory:
 
 ## Docker Compose Setup
 
+Ensure that you are currently using **Docker Compose v2** in your local Docker Desktop.
+- Launch your local Docker Desktop application
+- Click on settings button at the top right hand corner (beside the name)
+- Under the General tab, scroll down until you see a checkbox that says Use Docker Compose V2, ensure that the box is checked then apply and restart (refer to the image below)
+![Docker Compose V2](https://github.com/user-attachments/assets/3b8d47c2-c488-4fc1-804d-418ffebbdd9c)
+
 By using multiple Dockerfiles in Docker Compose, we can manage complex multi-container applications where each service has its own environment and build process.
 
 1. Build and Start the Application
