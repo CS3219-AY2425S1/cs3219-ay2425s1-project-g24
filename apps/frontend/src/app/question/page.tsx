@@ -299,6 +299,8 @@ export default function QuestionListPage() {
   const [visibleTests, setVisibleTests] = useState<Test[]>([]);
   const [hiddenTests, setHiddenTests] = useState<Test[]>([]);
   const [isTestsLoading, setIsTestsLoading] = useState<boolean>(true);
+  const [activeKey, setActiveKey] = useState<string | undefined>(undefined);
+  const [testActiveKey, setTestActiveKey] = useState<string>("1");
 
   const handleAddVisibleTest = () => {
     const newKey = uuidv4();
@@ -306,11 +308,13 @@ export default function QuestionListPage() {
       ...visibleTests,
       { key: newKey, input: "", expected: "" },
     ]);
+    setActiveKey(newKey);
   };
 
   const handleAddHiddenTest = () => {
     const newKey = uuidv4();
     setHiddenTests([...hiddenTests, { key: newKey, input: "", expected: "" }]);
+    setActiveKey(newKey);
   };
 
   const handleRemoveVisibleTest = (targetKey: string) => {
@@ -353,12 +357,13 @@ export default function QuestionListPage() {
 
         // Add a unique key to each test
         if (visibleTests) {
-          setVisibleTests(
-            visibleTests.map((test) => ({
-              ...test,
-              key: uuidv4(),
-            }))
-          );
+          const keyedVisibleTests = visibleTests.map((test, index) => ({
+            ...test,
+            key: uuidv4(),
+          }));
+          setVisibleTests(keyedVisibleTests);
+          setActiveKey(keyedVisibleTests[0].key);
+          setTestActiveKey("1");
         }
         if (hiddenTests) {
           setHiddenTests(
@@ -530,7 +535,16 @@ export default function QuestionListPage() {
                     allowClear
                   />
                 </Form.Item>
-                <Tabs defaultActiveKey="1">
+                <Tabs
+                  defaultActiveKey="1"
+                  onChange={(key) => {
+                    setActiveKey(
+                      key == "1" ? visibleTests[0].key : hiddenTests[0]?.key
+                    );
+                    setTestActiveKey(key);
+                  }}
+                  activeKey={testActiveKey}
+                >
                   {/* Visible Tests Tab */}
                   <TabPane
                     tab={
@@ -550,6 +564,8 @@ export default function QuestionListPage() {
                             ? handleAddVisibleTest()
                             : handleRemoveVisibleTest(targetKey.toString())
                         }
+                        onChange={(key) => setActiveKey(key)}
+                        activeKey={activeKey}
                       >
                         {visibleTests.map((test: Test, index: number) => (
                           <TabPane
@@ -630,6 +646,8 @@ export default function QuestionListPage() {
                             ? handleAddHiddenTest()
                             : handleRemoveHiddenTest(targetKey.toString())
                         }
+                        onChange={(key) => setActiveKey(key)}
+                        activeKey={activeKey}
                       >
                         {hiddenTests.map((test: Test, index: number) => (
                           <TabPane tab={`Test ${index + 1}`} key={test.key}>
@@ -942,7 +960,18 @@ export default function QuestionListPage() {
                         />
                       </Form.Item>
                       {/* REFACTOR: should abstract out tabs to a common component for reusability */}
-                      <Tabs defaultActiveKey="1">
+                      <Tabs
+                        defaultActiveKey="1"
+                        onChange={(key) => {
+                          setActiveKey(
+                            key == "1"
+                              ? visibleTests[0].key
+                              : hiddenTests[0]?.key
+                          );
+                          setTestActiveKey(key);
+                        }}
+                        activeKey={testActiveKey}
+                      >
                         {/* Visible Tests Tab */}
                         <TabPane
                           tab={
@@ -959,6 +988,8 @@ export default function QuestionListPage() {
                                 ? handleAddVisibleTest()
                                 : handleRemoveVisibleTest(targetKey.toString())
                             }
+                            onChange={(key) => setActiveKey(key)}
+                            activeKey={activeKey}
                           >
                             {visibleTests.map((test: Test, index: number) => (
                               <TabPane
@@ -1033,6 +1064,8 @@ export default function QuestionListPage() {
                                 ? handleAddHiddenTest()
                                 : handleRemoveHiddenTest(targetKey.toString())
                             }
+                            onChange={(key) => setActiveKey(key)}
+                            activeKey={activeKey}
                           >
                             {hiddenTests.map((test: Test, index: number) => (
                               <TabPane tab={`Test ${index + 1}`} key={test.key}>
