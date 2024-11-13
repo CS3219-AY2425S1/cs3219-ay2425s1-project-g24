@@ -18,6 +18,7 @@ import {
   Checkbox,
   Tooltip,
   Card,
+  Spin,
 } from "antd";
 import { Content } from "antd/es/layout/layout";
 import {
@@ -293,8 +294,11 @@ export default function QuestionListPage() {
     return () => clearTimeout(timeout);
   }, [search]);
 
+  // Testcases
+
   const [visibleTests, setVisibleTests] = useState<Test[]>([]);
   const [hiddenTests, setHiddenTests] = useState<Test[]>([]);
+  const [isTestsLoading, setIsTestsLoading] = useState<boolean>(true);
 
   const handleAddVisibleTest = () => {
     const newKey = uuidv4();
@@ -342,38 +346,41 @@ export default function QuestionListPage() {
   };
 
   async function fetchTestsForQuestion(questionId: string) {
-    try {
-      const response = await ReadAllTestcases(questionId); // Replace with the actual API call to fetch tests
-      const { visibleTests, hiddenTests } = response;
+    setIsTestsLoading(true);
+    ReadAllTestcases(questionId)
+      .then((response) => {
+        const { visibleTests, hiddenTests } = response;
 
-      // Add a unique key to each test
-      if (visibleTests) {
-        setVisibleTests(
-          visibleTests.map((test) => ({
-            ...test,
-            key: uuidv4(),
-          }))
-        );
-      }
-      if (hiddenTests) {
-        setHiddenTests(
-          hiddenTests.map((test) => ({
-            ...test,
-            key: uuidv4(),
-          }))
-        );
-      }
-    } catch (err) {
-      error("Error fetching tests for question.");
-    }
+        // Add a unique key to each test
+        if (visibleTests) {
+          setVisibleTests(
+            visibleTests.map((test) => ({
+              ...test,
+              key: uuidv4(),
+            }))
+          );
+        }
+        if (hiddenTests) {
+          setHiddenTests(
+            hiddenTests.map((test) => ({
+              ...test,
+              key: uuidv4(),
+            }))
+          );
+        }
+      })
+      .catch((err) => {
+        error("Error fetching tests for question.");
+      })
+      .finally(() => {
+        setIsTestsLoading(false);
+      });
   }
 
   async function deleteTestsByDocRefId(docRefId: string) {
-    try {
-      await DeleteTestcases(docRefId); // Replace with the actual API call
-    } catch (err) {
+    await DeleteTestcases(docRefId).catch((e) => {
       error("Error deleting tests associated with the question.");
-    }
+    });
   }
 
   // Table column specification
@@ -533,69 +540,75 @@ export default function QuestionListPage() {
                     }
                     key="1"
                   >
-                    <Tabs
-                      type="editable-card"
-                      onEdit={(targetKey, action) =>
-                        action === "add"
-                          ? handleAddVisibleTest()
-                          : handleRemoveVisibleTest(targetKey.toString())
-                      }
-                    >
-                      {visibleTests.map((test: Test, index: number) => (
-                        <TabPane
-                          tab={`Test ${index + 1}`} // Dynamic numbering based on index
-                          key={test.key}
-                          closable={visibleTests.length > 1} // Restrict removing if only one visible test
-                        >
-                          <Form.Item
-                            label="Input"
-                            name={`visible-input-${test.key}`}
-                            rules={[
-                              {
-                                required: true,
-                                message: "Please enter input value",
-                              },
-                            ]}
+                    {isTestsLoading ? (
+                      <Spin style={{ justifySelf: "center" }} />
+                    ) : (
+                      <Tabs
+                        type="editable-card"
+                        onEdit={(targetKey, action) =>
+                          action === "add"
+                            ? handleAddVisibleTest()
+                            : handleRemoveVisibleTest(targetKey.toString())
+                        }
+                      >
+                        {visibleTests.map((test: Test, index: number) => (
+                          <TabPane
+                            tab={`Test ${index + 1}`} // Dynamic numbering based on index
+                            key={test.key}
+                            closable={visibleTests.length > 1} // Restrict removing if only one visible test
                           >
-                            <Input
-                              placeholder="Input"
-                              value={test.input}
-                              onChange={(e) => {
-                                handleTestChange(
-                                  "visible",
-                                  index,
-                                  e.target.value,
-                                  undefined
-                                );
-                              }}
-                            />
-                          </Form.Item>
-                          <Form.Item
-                            label="Expected"
-                            name={`visible-expected-${test.key}`}
-                            rules={[
-                              {
-                                required: true,
-                                message: "Please enter expected value",
-                              },
-                            ]}
-                          >
-                            <Input
-                              placeholder="Expected"
-                              value={test.expected}
-                              onChange={(e) => {
-                                handleTestChange(
-                                  "visible",
-                                  index,
-                                  undefined,
-                                  e.target.value
-                                );
-                              }}
-                            />
-                          </Form.Item>
-                        </TabPane>
-                      ))}
-                    </Tabs>
+                            <Form.Item
+                              label="Input"
+                              name={`visible-input-${test.key}`}
+                              initialValue={test.input}
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "Please enter input value",
+                                },
+                              ]}
+                            >
+                              <Input
+                                placeholder="Input"
+                                value={test.input}
+                                onChange={(e) => {
+                                  handleTestChange(
+                                    "visible",
+                                    index,
+                                    e.target.value,
+                                    undefined
+                                  );
+                                }}
+                              />
+                            </Form.Item>
+                            <Form.Item
+                              label="Expected"
+                              name={`visible-expected-${test.key}`}
+                              initialValue={test.expected}
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "Please enter expected value",
+                                },
+                              ]}
+                            >
+                              <Input
+                                placeholder="Expected"
+                                value={test.expected}
+                                onChange={(e) => {
+                                  handleTestChange(
+                                    "visible",
+                                    index,
+                                    undefined,
+                                    e.target.value
+                                  );
+                                }}
+                              />
+                            </Form.Item>
+                          </TabPane>
+                        ))}
+                      </Tabs>
+                    )}
                   </TabPane>
 
                   {/* Hidden Tests Tab */}
@@ -607,65 +620,71 @@ export default function QuestionListPage() {
                     }
                     key="2"
                   >
-                    <Tabs
-                      type="editable-card"
-                      onEdit={(targetKey, action) =>
-                        action === "add"
-                          ? handleAddHiddenTest()
-                          : handleRemoveHiddenTest(targetKey.toString())
-                      }
-                    >
-                      {hiddenTests.map((test: Test, index: number) => (
-                        <TabPane tab={`Test ${index + 1}`} key={test.key}>
-                          <Form.Item
-                            label="Input"
-                            name={`hidden-input-${test.key}`}
-                            rules={[
-                              {
-                                required: true,
-                                message: "Please enter input value",
-                              },
-                            ]}
-                          >
-                            <Input
-                              placeholder="Input"
-                              value={test.input}
-                              onChange={(e) => {
-                                handleTestChange(
-                                  "hidden",
-                                  index,
-                                  e.target.value,
-                                  undefined
-                                );
-                              }}
-                            />
-                          </Form.Item>
-                          <Form.Item
-                            label="Expected"
-                            name={`hidden-expected-${test.key}`}
-                            rules={[
-                              {
-                                required: true,
-                                message: "Please enter expected value",
-                              },
-                            ]}
-                          >
-                            <Input
-                              placeholder="Expected"
-                              value={test.expected}
-                              onChange={(e) => {
-                                handleTestChange(
-                                  "hidden",
-                                  index,
-                                  undefined,
-                                  e.target.value
-                                );
-                              }}
-                            />
-                          </Form.Item>
-                        </TabPane>
-                      ))}
-                    </Tabs>
+                    {isTestsLoading ? (
+                      <Spin />
+                    ) : (
+                      <Tabs
+                        type="editable-card"
+                        onEdit={(targetKey, action) =>
+                          action === "add"
+                            ? handleAddHiddenTest()
+                            : handleRemoveHiddenTest(targetKey.toString())
+                        }
+                      >
+                        {hiddenTests.map((test: Test, index: number) => (
+                          <TabPane tab={`Test ${index + 1}`} key={test.key}>
+                            <Form.Item
+                              label="Input"
+                              name={`hidden-input-${test.key}`}
+                              initialValue={test.input}
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "Please enter input value",
+                                },
+                              ]}
+                            >
+                              <Input
+                                placeholder="Input"
+                                value={test.input}
+                                onChange={(e) => {
+                                  handleTestChange(
+                                    "hidden",
+                                    index,
+                                    e.target.value,
+                                    undefined
+                                  );
+                                }}
+                              />
+                            </Form.Item>
+                            <Form.Item
+                              label="Expected"
+                              name={`hidden-expected-${test.key}`}
+                              initialValue={test.expected}
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "Please enter expected value",
+                                },
+                              ]}
+                            >
+                              <Input
+                                placeholder="Expected"
+                                value={test.expected}
+                                onChange={(e) => {
+                                  handleTestChange(
+                                    "hidden",
+                                    index,
+                                    undefined,
+                                    e.target.value
+                                  );
+                                }}
+                              />
+                            </Form.Item>
+                          </TabPane>
+                        ))}
+                      </Tabs>
+                    )}
                   </TabPane>
                 </Tabs>
                 <Form.Item
