@@ -68,11 +68,11 @@ export const GetVisibleTests = async (
         }
     );
 
-    if (response.status === 200) {
+    if (response.ok) {
         return response.json();
     } else {
         throw new Error(
-            `Error fetching test cases: ${response.status} ${response.statusText}`
+            `Error fetching test cases: ${await response.text()}`
         );
     }
 }
@@ -92,7 +92,7 @@ export const ExecuteVisibleAndCustomTests = async (
         }
     );
 
-    if (response.status === 200) {
+    if (response.ok) {
         return response.json();
     } else {
         throw new Error(
@@ -116,7 +116,7 @@ export const ExecuteVisibleAndHiddenTestsAndSubmit = async (
         }
     );
 
-    if (response.status === 200) {
+    if (response.ok) {
         return response.json();
     } else {
         throw new Error(

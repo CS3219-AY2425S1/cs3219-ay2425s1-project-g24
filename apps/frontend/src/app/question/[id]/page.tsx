@@ -39,7 +39,7 @@ export default function QuestionPage() {
   // Message States
   const [messageApi, contextHolder] = message.useMessage();
 
-  const error = (message: string) => {
+  const errorMessage = (message: string) => {
     messageApi.open({
       type: "error",
       content: message,
@@ -129,13 +129,20 @@ export default function QuestionPage() {
         setCategories(data.categories);
         setDescription(data.description);
       })
+      .catch((e) => {
+        errorMessage(e.message);
+      })
       .finally(() => {
         setIsLoading(false);
       });
 
-    GetVisibleTests(questionDocRefId).then((data: Test[]) => {
-      setVisibleTestCases(data);
-    });
+    GetVisibleTests(questionDocRefId)
+      .then((data: Test[]) => {
+        setVisibleTestCases(data);
+      })
+      .catch((e) => {
+        errorMessage(e.message);
+      });
   }, [questionDocRefId]);
 
   useEffect(() => {

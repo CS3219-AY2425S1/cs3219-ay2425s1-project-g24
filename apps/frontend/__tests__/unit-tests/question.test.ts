@@ -210,9 +210,11 @@ describe("GetSingleQuestion", () => {
     const DOCREF = "mockdocref";
     beforeEach(() => {
         global.fetch = jest.fn().mockResolvedValue({
+            ok: true, // Ensure `ok` is true to hit the success branch
             async json() {
                 return QUESTIONS[0]
-            }
+            },
+            text: () => Promise.resolve('mocked response'),
         });
     });
 
@@ -238,6 +240,7 @@ describe("CreateQuestion", () => {
         global.fetch = jest.fn().mockResolvedValue({
             status: 200,
             statusText: "OK",
+            ok: true, // Ensure `ok` is true to hit the success branch
             async json() {
                 return createdQuestion
             }

@@ -14,8 +14,8 @@ func PaginateResponse(limit, offset int, histories []SubmissionHistory) *Histori
 	end := offset + limit
 
 	var paginatedHistory []SubmissionHistory
-	if start < len(histories) {
-		if end > len(histories) {
+	if start <= len(histories) {
+		if end >= len(histories) {
 			end = len(histories)
 		}
 	} else {

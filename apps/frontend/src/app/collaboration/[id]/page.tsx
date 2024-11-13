@@ -12,6 +12,7 @@ import {
   Tag,
   Typography,
   Spin,
+  Tooltip,
 } from "antd";
 import { Content } from "antd/es/layout/layout";
 import "./styles.scss";
@@ -168,6 +169,13 @@ export default function CollaborationPage(props: CollaborationProps) {
     });
   };
 
+  const errorMessage = (message: string) => {
+    messageApi.open({
+      type: "error",
+      content: message,
+    });
+  };
+
   const sendSubmissionResultsToMatchedUser = (data: SubmissionResults) => {
     if (!providerRef.current) {
       throw new Error("Provider not initialized");
@@ -312,6 +320,8 @@ export default function CollaborationPage(props: CollaborationProps) {
     if (visibleTestCases.length == 0) {
       GetVisibleTests(questionDocRefId).then((data: Test[]) => {
         setVisibleTestCases(data);
+      }).catch((e) => {
+        errorMessage(e.message);
       });
     }
 
@@ -399,6 +409,7 @@ export default function CollaborationPage(props: CollaborationProps) {
     localStorage.removeItem("matchedTopics");
     localStorage.removeItem("submissionHiddenTestResultsAndStatus");
     localStorage.removeItem("visibleTestResults");
+    localStorage.removeItem("editor-language"); // Remove editor language type when session closed
   };
 
   return (
@@ -507,7 +518,9 @@ export default function CollaborationPage(props: CollaborationProps) {
                   />
                 )}
                 <div className="hidden-test-results">
-                  <InfoCircleFilled className="hidden-test-icon" />
+                  <Tooltip title="Status applies only to this session">
+                    <InfoCircleFilled className="hidden-test-icon" />
+                  </Tooltip>
                   <Typography.Text
                     strong
                     style={{
