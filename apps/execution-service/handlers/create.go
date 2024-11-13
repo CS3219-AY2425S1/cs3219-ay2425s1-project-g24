@@ -24,6 +24,10 @@ func (s *Service) CreateTest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Normalise test cases
+	test.VisibleTestCases = utils.NormaliseTestCaseFormat(test.VisibleTestCases)
+	test.HiddenTestCases = utils.NormaliseTestCaseFormat(test.HiddenTestCases)
+
 	// Automatically populate validation for input and output in test case
 	test.InputValidation = utils.GetDefaultValidation()
 	test.OutputValidation = utils.GetDefaultValidation()
@@ -54,6 +58,7 @@ func (s *Service) CreateTest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Test already exists for the question", http.StatusConflict)
 		return
 	}
+	defer iter.Stop()
 
 	// Save test to Firestore
 	docRef, _, err := s.Client.Collection("tests").Add(ctx, map[string]interface{}{
@@ -103,3 +108,12 @@ func (s *Service) CreateTest(w http.ResponseWriter, r *http.Request) {
 //"visibleTestCases": "2\nhello\nolleh\nHannah\nhannaH",
 //"hiddenTestCases": "2\nHannah\nhannaH\nabcdefg\ngfedcba"
 //}'
+
+//curl -X POST http://localhost:8083/tests \
+//-H "Content-Type: application/json" \
+//-d "{
+//\"questionDocRefId\": \"sampleDocRefId12345\",
+//\"questionTitle\": \"Sample Question Title\",
+//\"visibleTestCases\": \"2\\nhello\\nolleh\\nHannah\\nhannaH\",
+//\"hiddenTestCases\": \"2\\nHannah\\nhannaH\\nabcdefg\\ngfedcba\"
+//}"

@@ -134,7 +134,14 @@ curl -X PUT http://localhost:8083/tests/{questionDocRefId} \
 }'
 ```
 
+`DELETE /tests/{questionDocRefId}`
+
+To delete an existing test case from an existing question, run the following command:
+
 ```bash
+curl -X DELETE http://localhost:8083/tests/{questionDocRefId} \
+-H "Content-Type: application/json"
+```
 
 `POST /tests/{questionDocRefId}/execute`
 

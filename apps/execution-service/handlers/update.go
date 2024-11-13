@@ -22,6 +22,10 @@ func (s *Service) UpdateTest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Normalise test cases
+	test.VisibleTestCases = utils.NormaliseTestCaseFormat(test.VisibleTestCases)
+	test.HiddenTestCases = utils.NormaliseTestCaseFormat(test.HiddenTestCases)
+
 	// Only test cases will be updated
 	// Validate test case format with default validation
 	if _, err := utils.ValidateTestCaseFormat(test.VisibleTestCases, utils.GetDefaultValidation(),
