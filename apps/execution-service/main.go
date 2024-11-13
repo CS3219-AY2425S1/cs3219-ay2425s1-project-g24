@@ -93,7 +93,7 @@ func registerRoutes(r *chi.Mux, service *handlers.Service) {
 			r.Put("/", service.UpdateTest)
 			r.Delete("/", service.DeleteTest)
 			r.Get("/", service.ReadVisibleTests)
-			r.Get("/hidden", service.ReadHiddenTests)
+			r.Get("/readall", service.ReadAllTests)
 			r.Post("/execute", service.ExecuteVisibleAndCustomTests)
 			r.Post("/submit", service.ExecuteVisibleAndHiddenTestsAndSubmit)
 		})

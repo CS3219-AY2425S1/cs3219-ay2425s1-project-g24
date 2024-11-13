@@ -10,7 +10,7 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-func (s *Service) ReadHiddenTests(w http.ResponseWriter, r *http.Request) {
+func (s *Service) ReadAllTests(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	questionDocRefId := chi.URLParam(r, "questionDocRefId")
@@ -47,9 +47,24 @@ func (s *Service) ReadHiddenTests(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
+	_, visibleTestCases, err := utils.GetTestLengthAndUnexecutedCases(test.VisibleTestCases)
+
+	var visibleTests []models.VisibleTest
+	for _, visibleTestCase := range visibleTestCases {
+		visibleTests = append(visibleTests, models.VisibleTest{
+			Input:    visibleTestCase.Input,
+			Expected: visibleTestCase.Expected,
+		})
+	}
+
+	allTests := models.AllTests{
+		VisibleTests: visibleTests,
+		HiddenTests:  hiddenTests,
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(hiddenTests)
+	json.NewEncoder(w).Encode(allTests)
 }
 
 //curl -X GET http://localhost:8083/tests/bmzFyLMeSOoYU99pi4yZ/ \
