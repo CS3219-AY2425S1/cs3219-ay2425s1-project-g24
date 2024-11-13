@@ -83,16 +83,17 @@ func registerRoutes(r *chi.Mux, service *handlers.Service) {
 		// Re: CreateTest
 		// Current: Unused, since testcases are populated via script
 		// Future extension: can be created by admin
-		//r.Post("/", service.CreateTest)
+		r.Post("/", service.CreateTest)
 		r.Post("/populate", service.PopulateTests)
 
 		r.Route("/{questionDocRefId}", func(r chi.Router) {
 			// Re: UpdateTest, DeleteTest
 			// Current: Unused, since testcases are executed within service and not exposed
 			// Future extension: can be read by admin to view testcases
-			//r.Put("/", service.UpdateTest)
-			//r.Delete("/", service.DeleteTest)
+			r.Put("/", service.UpdateTest)
+			r.Delete("/", service.DeleteTest)
 			r.Get("/", service.ReadVisibleTests)
+			r.Get("/readall", service.ReadAllTests)
 			r.Post("/execute", service.ExecuteVisibleAndCustomTests)
 			r.Post("/submit", service.ExecuteVisibleAndHiddenTestsAndSubmit)
 		})

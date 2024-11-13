@@ -673,3 +673,9 @@ func validateInputOrOutput(inputOrOutput string) bool {
 }
 `, importCode.String(), functionBody)
 }
+
+func GetDefaultValidation() string {
+	return getPackagesAndFunction([]string{}, `
+return len(inputOrOutput) > 0
+`)
+}

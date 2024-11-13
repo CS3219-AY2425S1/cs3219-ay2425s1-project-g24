@@ -77,3 +77,7 @@ package main
 	result := validateFunc.Interface().(func(string) bool)(inputOrOutput)
 	return result, nil
 }
+
+func NormaliseTestCaseFormat(testCase string) string {
+	return strings.ReplaceAll(testCase, "\\n", "\n")
+}
