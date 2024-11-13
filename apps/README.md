@@ -2,6 +2,8 @@
 
 This project uses Docker Compose to manage multiple services such as a frontend, backend, and a database. The configuration is defined in the `docker-compose.yml` file, and environment variables can be stored in environment files for different environments (e.g., development, production).
 
+More details on how to set up Docker Compose can be found [here](../docs/setup.md)
+
 ## Prerequisites
 
 Before you begin, ensure you have the following installed on your machine:
@@ -30,10 +32,24 @@ In the `./apps` directory:
 ├── user-service
 │   ├── Dockerfile           # Dockerfile for user-service
 │   └── ... (other user-service files)
-
+├── execution-service
+│   ├── Dockerfile           # Dockerfile for execution-service
+│   └── ... (other execution-service files)
+├── signalling-service
+│   ├── Dockerfile           # Dockerfile for signalling-service
+│   └── ... (other signalling-service files)
+├── history-service
+│   ├── Dockerfile           # Dockerfile for history-service
+│   └── ... (other history-service files)
 ```
 
 ## Docker Compose Setup
+
+Ensure that you are currently using **Docker Compose v2** in your local Docker Desktop.
+- Launch your local Docker Desktop application
+- Click on settings button at the top right hand corner (beside the name)
+- Under the General tab, scroll down until you see a checkbox that says Use Docker Compose V2, ensure that the box is checked then apply and restart (refer to the image below)
+![Docker Compose V2](https://github.com/user-attachments/assets/3b8d47c2-c488-4fc1-804d-418ffebbdd9c)
 
 By using multiple Dockerfiles in Docker Compose, we can manage complex multi-container applications where each service has its own environment and build process.
 
@@ -54,11 +70,15 @@ This will:
 
 Once running, you can access:
 
-- The **frontend** at http://localhost:3000
-- The **user service** at http://localhost:3001
-- The **question service** at http://localhost:8080 (REST) and http://localhost:50051 (gRPC)
-- The **matching service** at http://localhost:8081
-- The **redis service** at http://localhost:6379
+- The [**frontend**](./frontend/README.md) at http://localhost:3000
+- The [**user-service**](./user-service/README.md) at http://localhost:3001
+- The [**question-service**](./question-service/README.md) at http://localhost:8080 (REST) and http://localhost:50051 (gRPC)
+- The [**matching-service**](./matching-service/README.md) at http://localhost:8081
+- The [**history-service**](./history-service/README.md) at http://localhost:8082
+- The [**execution-service**](./execution-service/README.md) at http://localhost:8083
+- The [**signalling-service**](./signalling-service/README.md) at http://localhost:4444
+- The **redis** at http://localhost:6379
+- The **rabbitmq** at http://localhost:5672
 
 3. Stopping Services
 
@@ -76,6 +96,11 @@ This command will stop and remove the containers, networks, and volumes created 
 
 - **Port Conflicts**: If you encounter port conflicts, ensure the host ports specified in docker-compose.yml (e.g., 3000:3000) are not in use by other applications.
 - **Environment Variables Not Loaded**: Ensure the `.env` files are in the correct directories as found in the `docker-compose.yml` file.
+- **Command execution failed**: When you try running test cases or submitting the code in the collaborative environment, if you encounter the following error message:
+    ```bash
+  Command execution failed: Unable to find image 'apps-python-sandbox:latest' locally docker: Error response from daemon: pull access denied for apps-python-sandbox, repository does not exist or may require 'docker login': denied: requested access to the resource is denied. See 'docker run --help'. : exit status 125
+    ```
+  Ensure that you have **Docker Compose V2** enabled for your Docker Desktop application. Please refer to the Docker Compose setup guide above to enable it locally.
 
 ### Known Issues
 

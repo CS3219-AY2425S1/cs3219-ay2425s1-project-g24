@@ -1,4 +1,27 @@
-# Question Service
+# History Service
+
+The History Service is designed to store and retrieve a user’s code submission history. Users can view their past submission records of a collaboration session, with details such as the submitted date, the question attempted on, and the matched username. The information on the submission is stored within the history service’s database, and the data is accessed through querying the history-service from the frontend. It uses Google Firestore as a cloud-based NoSQL database for efficient and scalable data storage and retrieval. It is developed with a RESTful API structure, allowing flexibility for client applications to interact with the service.
+
+### Technology Stack
+
+- Golang (Go): Statically typed, compiled language with low latency. Fast and efficient processing is ideal for high-read, high-write environments like in history service.
+- Firebase Firestore: NoSQL Document database that is designed for automatic horizontal scaling and schema-less design that allows for flexibility as application grows and new features are added.
+- REST Server: chi router was utilized which supports CORS, logging and timeout via middlewares. It is stateless, which reduces coupling and enhances scalability and reliability, simplicity and flexibility. For example, clients may make requests to different server instances when scaled.
+- Docker: used to containerize the History Service to simplify deployment.
+
+### Design Decisions
+
+The submission history is organized with the most recent submission displayed first, making it easy for users to review their past submissions. Pagination is implemented to help users find specific records efficiently and reduce the amount of data transferred when loading the page.
+
+![Screenshot of the submission history page with pagination](../../docs/submission_history_page.png)
+
+On the question page, users can view their past submissions for that question, allowing them to see their submitted code alongside the question details for better context.
+
+![Screenshot of a question’s submission history](../../docs/indiv_question_page.png)
+
+Each submission record is created through the execution service via an asynchronous call, ensuring smooth and efficient processing (more details provided in the next section).
+
+---
 
 ## Overview
 
@@ -90,10 +113,10 @@ The server will be available at http://localhost:8082.
 
 ## API Endpoints
 
-- `POST /histories`
-- `GET /histories/{docRefId}`
-- `PUT /histories/{docRefId}`
-- `DELETE /histories/{docRefId}`
+- `POST: /histories`: Create a history record of the code submission
+- `GET: /histories/{historyDocRefId}`: Reads the history record of the code submission, identified by the history reference ID
+- `GET: /histories/user/{username}`: Returns a paginated list of history records by a user, identified by the username
+- `GET: /histories/user/{username}/question/{questionDocRefId}`: Returns a paginated list of history records by a user, for a question, identified by the username and question reference ID
 
 ```bash
 go run main.go
