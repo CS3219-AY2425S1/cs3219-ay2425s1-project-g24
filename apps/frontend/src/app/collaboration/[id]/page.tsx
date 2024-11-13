@@ -217,15 +217,19 @@ export default function CollaborationPage(props: CollaborationProps) {
   };
 
   const updateSubmissionResults = (data: SubmissionResults) => {
-    setSubmissionHiddenTestResultsAndStatus({
+    const submissionHiddenTestResultsAndStatus: SubmissionHiddenTestResultsAndStatus = {
       hiddenTestResults: data.hiddenTestResults,
       status: data.status,
-    });
+    }
+    setSubmissionHiddenTestResultsAndStatus(submissionHiddenTestResultsAndStatus);
+    localStorage.setItem("submissionHiddenTestResultsAndStatus", JSON.stringify(submissionHiddenTestResultsAndStatus));
     setVisibleTestCases(data.visibleTestResults);
+    localStorage.setItem("visibleTestResults", JSON.stringify(data.visibleTestResults));
   };
 
   const updateExecutionResults = (data: ExecutionResults) => {
     setVisibleTestCases(data.visibleTestResults);
+    localStorage.setItem("visibleTestResults", JSON.stringify(data.visibleTestResults));
   };
 
   const handleRunTestCases = async () => {
@@ -239,7 +243,7 @@ export default function CollaborationPage(props: CollaborationProps) {
       language: selectedLanguage,
       customTestCases: "",
     });
-    setVisibleTestCases(data.visibleTestResults);
+    updateExecutionResults(data);
     infoMessage("Test cases executed. Review the results below.");
     sendExecutionResultsToMatchedUser(data);
     setIsLoadingTestCase(false);
@@ -262,11 +266,11 @@ export default function CollaborationPage(props: CollaborationProps) {
       questionDifficulty: complexity ?? "",
       questionTopics: categories,
     });
-    setVisibleTestCases(data.visibleTestResults);
-    setSubmissionHiddenTestResultsAndStatus({
-      hiddenTestResults: data.hiddenTestResults,
-      status: data.status,
+    updateExecutionResults({
+      visibleTestResults: data.visibleTestResults,
+      customTestResults: [],
     });
+    updateSubmissionResults(data);
     sendSubmissionResultsToMatchedUser(data);
     successMessage("Code saved successfully!");
     setIsLoadingSubmission(false);
@@ -291,6 +295,11 @@ export default function CollaborationPage(props: CollaborationProps) {
     const currentUser: string = localStorage.getItem("user") ?? "";
     const matchedTopics: string[] =
       localStorage.getItem("matchedTopics")?.split(",") ?? [];
+      const submissionHiddenTestResultsAndStatus: SubmissionHiddenTestResultsAndStatus | undefined = 
+      localStorage.getItem("submissionHiddenTestResultsAndStatus")
+        ? JSON.parse(localStorage.getItem("submissionHiddenTestResultsAndStatus") as string)
+        : undefined;
+    const visibleTestCases: Test[] = JSON.parse(localStorage.getItem("visibleTestResults") ?? "[]") ?? [];
 
     // Set states from localstorage
     setCollaborationId(collabId);
@@ -298,6 +307,8 @@ export default function CollaborationPage(props: CollaborationProps) {
     setCurrentUser(currentUser);
     setMatchedTopics(matchedTopics);
     setQuestionDocRefId(questionDocRefId);
+    setSubmissionHiddenTestResultsAndStatus(submissionHiddenTestResultsAndStatus);
+    setVisibleTestCases(visibleTestCases);
 
     GetSingleQuestion(questionDocRefId).then((data: Question) => {
       setQuestionTitle(`${data.id}. ${data.title}`);
@@ -306,13 +317,13 @@ export default function CollaborationPage(props: CollaborationProps) {
       setDescription(data.description);
     });
 
-    GetVisibleTests(questionDocRefId)
-      .then((data: Test[]) => {
+    if (visibleTestCases.length == 0) {
+      GetVisibleTests(questionDocRefId).then((data: Test[]) => {
         setVisibleTestCases(data);
-      })
-      .catch((e) => {
+      }).catch((e) => {
         errorMessage(e.message);
       });
+    }
 
     // Start stopwatch
     startStopwatch();
@@ -396,6 +407,8 @@ export default function CollaborationPage(props: CollaborationProps) {
     localStorage.removeItem("collabId");
     localStorage.removeItem("questionDocRefId");
     localStorage.removeItem("matchedTopics");
+    localStorage.removeItem("submissionHiddenTestResultsAndStatus");
+    localStorage.removeItem("visibleTestResults");
     localStorage.removeItem("editor-language"); // Remove editor language type when session closed
   };
 
