@@ -238,16 +238,19 @@ export default function CollaborationPage(props: CollaborationProps) {
     }
     setIsLoadingTestCase(true);
     sendExecutingStateToMatchedUser(true);
-    const data = await ExecuteVisibleAndCustomTests(questionDocRefId, {
-      code: code,
-      language: selectedLanguage,
-      customTestCases: "",
-    });
-    updateExecutionResults(data);
-    infoMessage("Test cases executed. Review the results below.");
-    sendExecutionResultsToMatchedUser(data);
-    setIsLoadingTestCase(false);
-    sendExecutingStateToMatchedUser(false);
+    try {
+      const data = await ExecuteVisibleAndCustomTests(questionDocRefId, {
+        code: code,
+        language: selectedLanguage,
+        customTestCases: "",
+      });
+      updateExecutionResults(data);
+      successMessage("Test cases executed. Review the results below.");
+      sendExecutionResultsToMatchedUser(data);
+    } finally {
+      setIsLoadingTestCase(false);
+      sendExecutingStateToMatchedUser(false);
+    }
   };
 
   const handleSubmitCode = async () => {
@@ -256,25 +259,28 @@ export default function CollaborationPage(props: CollaborationProps) {
     }
     setIsLoadingSubmission(true);
     sendSubmittingStateToMatchedUser(true);
-    const data = await ExecuteVisibleAndHiddenTestsAndSubmit(questionDocRefId, {
-      code: code,
-      language: selectedLanguage,
-      user: currentUser ?? "",
-      matchedUser: matchedUser ?? "",
-      matchedTopics: matchedTopics ?? [],
-      title: questionTitle ?? "",
-      questionDifficulty: complexity ?? "",
-      questionTopics: categories,
-    });
-    updateExecutionResults({
-      visibleTestResults: data.visibleTestResults,
-      customTestResults: [],
-    });
-    updateSubmissionResults(data);
-    sendSubmissionResultsToMatchedUser(data);
-    successMessage("Code saved successfully!");
-    setIsLoadingSubmission(false);
-    sendSubmittingStateToMatchedUser(false);
+    try {
+      const data = await ExecuteVisibleAndHiddenTestsAndSubmit(questionDocRefId, {
+        code: code,
+        language: selectedLanguage,
+        user: currentUser ?? "",
+        matchedUser: matchedUser ?? "",
+        matchedTopics: matchedTopics ?? [],
+        title: questionTitle ?? "",
+        questionDifficulty: complexity ?? "",
+        questionTopics: categories,
+      });
+      updateExecutionResults({
+        visibleTestResults: data.visibleTestResults,
+        customTestResults: [],
+      });
+      updateSubmissionResults(data);
+      sendSubmissionResultsToMatchedUser(data);
+      successMessage("Code saved successfully!");
+    } finally {
+      setIsLoadingSubmission(false);
+      sendSubmittingStateToMatchedUser(false);
+    }
   };
 
   const handleCodeChange = (code: string) => {

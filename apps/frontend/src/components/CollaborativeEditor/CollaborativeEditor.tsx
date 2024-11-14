@@ -303,7 +303,7 @@ const CollaborativeEditor = forwardRef(
               state.editorState &&
               state.editorState.id !== latestLanguageChangeId
             ) {
-              latestSubmissionId = state.editorState.id;
+              latestLanguageChangeId = state.editorState.id;
               setSelectedLanguage(state.editorState.language);
               // if (props.user === state.user.name) {
               //   console.log("ownself update ownself");
