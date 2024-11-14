@@ -1,0 +1,7 @@
+# Ignore private key json file
+cs3219-g24-firebase-adminsdk-9cm7h-b1675603ab.json
+cs3219-g24-staging-firebase-adminsdk-suafv-9c0d1b2299.json
+test_create_api_results.txt
+test_list_api_results.txt
+test_update_api_results.txt
+.env

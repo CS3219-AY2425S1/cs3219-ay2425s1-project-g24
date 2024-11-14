@@ -1,0 +1,147 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    networks:
+      - apps_network
+    env_file:
+      - ./frontend/.env
+    volumes:
+      - ./frontend:/frontend
+    depends_on:
+      - signalling-service
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    ports:
+      - 3001:3001
+    networks:
+      - apps_network
+    env_file:
+      - ./user-service/.env
+    volumes:
+      - ./user-service:/user-service
+
+  question-service:
+    build:
+      context: ./question-service
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+      - 50051:50051
+    env_file:
+      - ./question-service/.env
+    networks:
+      - apps_network
+    volumes:
+      - ./question-service:/question-service
+
+  matching-service:
+    build:
+      context: ./matching-service
+      dockerfile: Dockerfile
+    ports:
+      - 8081:8081
+    env_file:
+      - ./matching-service/.env
+    networks:
+      - apps_network
+    volumes:
+      - ./matching-service:/matching-service
+    depends_on:
+      - redis
+
+  history-service:
+    build:
+      context: ./history-service
+      dockerfile: Dockerfile
+    ports:
+      - 8082:8082
+    env_file:
+      - ./history-service/.env
+    networks:
+      - apps_network
+    volumes:
+      - ./history-service:/history-service
+    depends_on:
+      - rabbitmq
+
+  signalling-service:
+    build:
+      context: ./signalling-service
+      dockerfile: Dockerfile
+    ports:
+      - 4444:4444
+    env_file:
+      - ./signalling-service/.env
+    networks:
+      - apps_network
+    volumes:
+      - ./signalling-service:/signalling-service
+
+  execution-service:
+    build:
+      context: ./execution-service
+      dockerfile: Dockerfile
+    ports:
+      - 8083:8083
+    env_file:
+      - ./execution-service/.env
+    networks:
+      - apps_network
+    volumes:
+      - ./execution-service:/execution-service
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - rabbitmq
+
+  redis:
+    image: redis:latest
+    networks:
+      - apps_network
+    ports:
+      - 6379:6379
+    container_name: redis-container
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    networks:
+      - apps_network
+    ports:
+      - 5672:5672 # Port for RabbitMQ message broker
+      - 15672:15672 # Port for RabbitMQ Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  python-sandbox:
+    build:
+      context: ./execution-service/execution/python
+      dockerfile: Dockerfile
+    networks:
+      - apps_network
+    container_name: python-sandbox
+
+  node-sandbox:
+    build:
+      context: ./execution-service/execution/node
+      dockerfile: Dockerfile
+    networks:
+      - apps_network
+    container_name: node-sandbox
+    stdin_open: true      # Enables interactive mode for passing standard input
+
+networks:
+  apps_network:
+
+volumes:
+  # Mounts a volume for RabbitMQ data persistence.
+  # This ensures that data is not lost when the container is restarted or removed.
+  rabbitmq_data:

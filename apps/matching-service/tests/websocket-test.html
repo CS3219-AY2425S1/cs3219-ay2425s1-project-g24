@@ -1,0 +1,513 @@
+<!-- Generated with the help of ChatGPT -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Matching Service: WebSocket Test</title>
+    <style>
+      /* General Reset */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #f4f4f9;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 1000px;
+        padding: 20px;
+        background-color: #ffffff;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+      }
+
+      h1 {
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 1.8em;
+        color: #333;
+      }
+
+      /* User Control Area */
+      .control-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding: 10px;
+        background-color: #e3e6f0;
+        border-radius: 6px;
+      }
+
+      label {
+        font-weight: bold;
+        color: #555;
+      }
+
+      input[type="number"] {
+        width: 60px;
+        padding: 5px;
+        font-size: 1em;
+        margin-left: 10px;
+      }
+
+      button {
+        padding: 8px 12px;
+        font-size: 1em;
+        background-color: #4e73df;
+        color: #ffffff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      button:hover {
+        background-color: #2e59d9;
+      }
+
+      /* User Section */
+      .user-card {
+        padding: 15px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background-color: #f9f9fc;
+      }
+
+      .user-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 1.1em;
+        font-weight: bold;
+        color: #333;
+      }
+
+      .status-text {
+        padding: 4px 8px;
+        font-size: 0.9em;
+        font-weight: bold;
+        border-radius: 4px;
+      }
+
+      .status-text.no-match {
+        background-color: #ffc107;
+        color: #856404;
+      }
+
+      .status-text.matching {
+        background-color: #17a2b8;
+        color: #ffffff;
+      }
+
+      .status-text.matched {
+        background-color: #28a745;
+        color: #ffffff;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .user-details {
+        margin-top: 15px;
+        line-height: 1.6;
+        color: #555;
+      }
+
+      .user-details strong {
+        color: #333;
+      }
+
+      /* Difficulty Levels */
+      .difficulty {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: bold;
+      }
+
+      .difficulty.easy {
+        background-color: #d4edda;
+        color: #155724;
+      }
+
+      .difficulty.medium {
+        background-color: #fff3cd;
+        color: #856404;
+      }
+
+      .difficulty.hard {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+
+      /* WebSocket Response */
+      .response {
+        font-size: 0.95em;
+        color: #3a3a3a;
+        margin-top: 10px;
+        padding: 8px;
+        border-left: 4px solid #4e73df;
+        background-color: #eef3ff;
+        border-radius: 4px;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container" style="align-self: start; margin: 10px">
+      <div class="control-section">
+        <label for="userCount">Number of Users:</label>
+        <input type="number" id="userCount" value="2" min="1" max="20" />
+        <button onclick="initializeUsers()">Initialize Users</button>
+        <button onclick="simulateUserRequestsWithDelay()">
+          Simulate User Requests
+        </button>
+      </div>
+      <div id="summaryContainer" style="margin-top: 20px; margin-bottom: 20px">
+        <h3>Summary of User Match Requests</h3>
+        <div id="summary"></div>
+      </div>
+      <div id="userContainer"></div>
+    </div>
+
+    <script>
+      const topicsList = [
+        "Algorithms",
+        "Arrays",
+        "Graphs",
+        "Data Structures",
+        "Recursion",
+        "Bit Manipulation",
+        "Databases",
+        "Brainteaser",
+        "Strings",
+      ];
+      const difficultiesList = ["easy", "medium", "hard"];
+      let userSettings = {};
+      let sockets = {};
+
+      function initializeUsers() {
+        const userCount = parseInt(
+          document.getElementById("userCount").value,
+          10
+        );
+        const container = document.getElementById("userContainer");
+        container.innerHTML = ""; // Clear previous elements
+        userSettings = {};
+        sockets = {};
+
+        for (let i = 1; i <= userCount; i++) {
+          userSettings[`user${i}`] = initializeUserSettings();
+          const userDiv = createUserInterface(i);
+          container.appendChild(userDiv);
+          randomizeDetails(i);
+        }
+      }
+
+      function randomizeDetails(userId) {
+        // Close existing WebSocket connection if it's open
+        if (sockets[`user${userId}`]) {
+          closeConnection(userId); // Close the connection and update status
+        }
+
+        const username = generateUniqueUsername();
+        const topics = getRandomTopics();
+        const difficulties = getRandomDifficulties();
+
+        userSettings[`user${userId}`] = { username, topics, difficulties };
+        updateUserDetailsDisplay(userId, username, topics, difficulties);
+      }
+
+      function openWebSocket(userId) {
+        if (sockets[`user${userId}`]) return; // Do not open if already open
+        const socket = new WebSocket("ws://localhost:8081/match");
+        sockets[`user${userId}`] = socket;
+        document.getElementById(`response${userId}`).innerText = "";
+
+        socket.onopen = function () {
+          console.log(`WebSocket for User ${userId} is open now.`);
+          const { username, topics, difficulties } =
+            userSettings[`user${userId}`];
+
+          socket.send(
+            JSON.stringify({
+              type: "match_request",
+              username: username,
+              topics: topics,
+              difficulties: difficulties,
+            })
+          );
+
+          document.getElementById(
+            `status${userId}`
+          ).innerText = `Status: matching in progress...`;
+          updateSummary(); // Refresh summary after opening
+        };
+
+        socket.onmessage = function (event) {
+          handleSocketMessage(event, userId);
+          updateSummary(); // Refresh summary on message
+        };
+
+        socket.onerror = function (error) {
+          console.log(`WebSocket error for User ${userId}: ` + error);
+        };
+
+        socket.onclose = function () {
+          console.log(`WebSocket for User ${userId} is closed now.`);
+          sockets[`user${userId}`] = null;
+        };
+      }
+
+      function closeConnection(userId) {
+        updateStatus(userId, `Status: matching cancelled`, "no-match");
+        clearResponse(userId);
+
+        if (sockets[`user${userId}`]) {
+          sockets[`user${userId}`].close();
+          sockets[`user${userId}`] = null;
+        }
+      }
+
+      function initializeUserSettings() {
+        return { username: "", topics: [], difficulties: [] };
+      }
+
+      function createUserInterface(userId) {
+        const userDiv = document.createElement("div");
+        userDiv.className = "user-card";
+        userDiv.innerHTML = `
+                <div class="user-header">
+                  <span>User ${userId} Details</span>
+                  <span class="status-text no-match" id="status${userId}">Status: no matching yet</span>
+                </div>
+                <div class="button-group">
+                  <button onclick="randomizeDetails(${userId})">Randomize Details</button>
+                  <button onclick="openWebSocket(${userId})">Find Match</button>
+                  <button onclick="closeConnection(${userId})">Cancel Match</button>
+                </div>
+                <div class="user-details" id="details${userId}">
+                  <strong>Username:</strong> <span id="username${userId}"></span><br>
+                  <strong>Topics:</strong> <span id="topics${userId}"></span><br>
+                  <strong>Difficulty:</strong> <span id="difficulty${userId}"></span>
+                </div>
+                <div class="response" id="response${userId}"></div>
+              `;
+        return userDiv;
+      }
+
+      function updateUserDetailsDisplay(
+        userId,
+        username,
+        topics,
+        difficulties
+      ) {
+        document.getElementById(`username${userId}`).innerText = username;
+        document.getElementById(`topics${userId}`).innerText =
+          topics.join(", ");
+
+        const difficultyElement = document.getElementById(
+          `difficulty${userId}`
+        );
+        difficultyElement.innerHTML = ""; // Clear existing difficulties
+        difficulties.forEach((difficulty) => {
+          const difficultySpan = document.createElement("span");
+          difficultySpan.className = `difficulty ${difficulty}`;
+          difficultySpan.innerText = difficulty + " "; // Add space for separation
+          difficultyElement.appendChild(difficultySpan); // Append difficulty span
+        });
+      }
+
+      function clearResponse(userId) {
+        document.getElementById(`response${userId}`).innerText = "";
+      }
+
+      function updateStatus(userId, message, statusClass) {
+        const statusElement = document.getElementById(`status${userId}`);
+        statusElement.innerText = message;
+        statusElement.className = `status-text ${statusClass}`;
+      }
+
+      function handleSocketOpen(socket, userId) {
+        const { username, topics, difficulties } =
+          userSettings[`user${userId}`];
+        socket.send(
+          JSON.stringify({
+            type: "match_request",
+            username,
+            topics,
+            difficulties,
+          })
+        );
+        updateStatus(userId, "Status: matching in progress...", "matching");
+      }
+      function handleSocketMessage(event, userId) {
+        const responseData = JSON.parse(event.data); // Parse the JSON data
+
+        if (responseData.type === "timeout") {
+          // Handle timeout response
+          const message =
+            responseData.message || "No match found. Please try again later.";
+          document.getElementById(
+            `response${userId}`
+          ).innerHTML = `<pre style="color: red;">${JSON.stringify(
+            { type: "timeout", message },
+            null,
+            2
+          )}</pre>`;
+          updateStatus(userId, "Status: matching timed out", "timeout");
+        } else if (responseData.type === "match_question_found") {
+          // Handle match found response
+          document.getElementById(
+            `response${userId}`
+          ).innerHTML = `<pre style="background-color: #d4edda; color: #155724; padding: 10px; border: 1px solid #c3e6cb;">${JSON.stringify(
+            responseData,
+            null,
+            2
+          )}</pre>`;
+          updateStatus(userId, "Status: match found", "matched");
+        } else {
+          // Handle unexpected response
+          document.getElementById(
+            `response${userId}`
+          ).innerHTML = `<pre style="color: orange;">${JSON.stringify(
+            responseData,
+            null,
+            2
+          )}</pre>`;
+          updateStatus(userId, "Status: unexpected response", "error");
+        }
+
+        updateSummary(); // Refresh summary
+      }
+
+      function handleSocketClose(userId) {
+        sockets[`user${userId}`] = null;
+      }
+
+      function generateUniqueUsername() {
+        let username;
+        do {
+          username = Math.random().toString(36).substring(2, 8);
+        } while (
+          Object.values(userSettings).some(
+            (settings) => settings.username === username
+          )
+        );
+        return username;
+      }
+
+      function getRandomTopics() {
+        return topicsList.filter(() => Math.random() < 0.3);
+      }
+
+      function getRandomDifficulties() {
+        return difficultiesList.filter(() => Math.random() < 0.4);
+      }
+
+      let isSimulating = false;
+
+      async function simulateUserRequestsWithDelay() {
+        if (isSimulating) {
+          alert(
+            "Simulation already in progress. Please wait until it finishes."
+          );
+          return;
+        }
+        isSimulating = true;
+
+        const maxUserCount = parseInt(
+          document.getElementById("userCount").value,
+          10
+        );
+        initializeUsers(); // Clear existing users
+        for (let i = 1; i <= maxUserCount; i++) {
+          // Initialize and open WebSocket for each user
+          randomizeDetails(i);
+          openWebSocket(i);
+
+          updateSummary(); // Update summary after each addition
+
+          // Wait for the delay before adding the next user
+          await delay(1000); // 1 second delay between each user request
+        }
+
+        isSimulating = false;
+      }
+      function updateSummary() {
+        const summaryContainer = document.getElementById("summary");
+        summaryContainer.innerHTML = ""; // Clear previous summary
+
+        // Create table structure
+        const summaryTable = document.createElement("table");
+        summaryTable.style.width = "100%";
+        summaryTable.style.borderCollapse = "collapse";
+
+        // Header row
+        summaryTable.innerHTML = `
+        <tr style="background-color: #f2f2f2;">
+            <th style="padding: 8px; border: 1px solid #ddd;">Username</th>
+            <th style="padding: 8px; border: 1px solid #ddd;">Status</th>
+            <th style="padding: 8px; border: 1px solid #ddd;">Topics</th>
+            <th style="padding: 8px; border: 1px solid #ddd;">Difficulty</th>
+        </tr>
+    `;
+
+        // Add each user's details to the table
+        Object.keys(userSettings).forEach((userId, index) => {
+          const user = userSettings[userId];
+          const statusElement = document.getElementById(`status${index + 1}`);
+          const statusText = statusElement
+            ? statusElement.innerText
+            : "unknown";
+
+          // Apply color coding to status
+          let statusColor = "black";
+          if (statusText.includes("matching in progress")) {
+            statusColor = "blue";
+          } else if (statusText.includes("match found")) {
+            statusColor = "green";
+          } else if (statusText.includes("timed out")) {
+            statusColor = "red";
+          }
+
+          // Create row for each user
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td style="padding: 8px; border: 1px solid #ddd;">${
+              user.username
+            }</td>
+            <td style="padding: 8px; border: 1px solid #ddd; color: ${statusColor};">${statusText}</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${user.topics.join(
+              ", "
+            )}</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${user.difficulties.join(
+              ", "
+            )}</td>
+        `;
+          summaryTable.appendChild(row);
+        });
+
+        summaryContainer.appendChild(summaryTable); // Append the summary table to the container
+      }
+
+      function delay(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+    </script>
+  </body>
+</html>

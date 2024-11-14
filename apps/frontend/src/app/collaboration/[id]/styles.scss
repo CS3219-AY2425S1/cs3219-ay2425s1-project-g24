@@ -1,0 +1,187 @@
+.collaboration-layout {
+  background: white;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.collaboration-content {
+  background: white;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.first-col,
+.second-col,
+.third-col {
+  height: 90vh;
+}
+
+.collab-row {
+  padding: 0rem 1rem;
+}
+
+.code-row {
+  height: 100%;
+  padding: 1rem 0.25rem 0.25rem;
+}
+
+.session-row {
+  height: 18%;
+  padding: 1rem 0.25rem 0.25rem;
+}
+
+.chat-row {
+  height: 82%;
+  padding: 0.25rem;
+}
+
+.test-top-container,
+.code-top-container,
+.session-top-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.code-container {
+  border: 2px solid #463f3a;
+  border-radius: 10px;
+  width: 100%;
+  padding: 1rem;
+}
+
+// .code-second-container {
+//   display: flex;
+//   margin: 4px 0px;
+// }
+
+.code-language {
+  margin: auto 8px auto 0px;
+}
+
+.language-select {
+  width: 120px;
+}
+
+.session-container {
+  border: 2px solid #463f3a;
+  border-radius: 10px;
+  width: 100%;
+  padding: 1rem;
+}
+
+.chat-container {
+  border: 2px solid #463f3a;
+  border-radius: 10px;
+  width: 100%;
+  padding: 1rem;
+}
+
+.chat-message-box {
+  margin-top: 1rem;
+  height: 365px;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  overflow-y: scroll;
+}
+
+.chat-header-message {
+  font-size: 14px;
+  color: #c6c6c6;
+  margin: 3px auto;
+  text-align: center;
+}
+
+.chat-typing-box {
+  margin-top: 1rem;
+}
+
+.question-title,
+.test-title,
+.code-title,
+.session-title,
+.chat-title {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.question-difficulty,
+.question-topic {
+  margin: 4px 0px;
+}
+
+.session-duration,
+.session-matched-user-label {
+  margin: 4px 0px;
+}
+
+.session-duration-timer {
+  font-weight: normal;
+  margin-left: 8px;
+}
+
+.session-matched-user-name {
+  color: #e0afa0;
+  margin-left: 8px;
+}
+
+.topic-label,
+.session-duration,
+.session-matched-user-label {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.title-icons {
+  margin-right: 4px;
+}
+
+.code-submit-button,
+.session-end-button,
+.test-case-button {
+  width: fit-content;
+}
+
+.modal-description {
+  margin-bottom: 2rem;
+}
+
+.session-modal-question,
+.session-modal-difficulty,
+.session-modal-duration,
+.session-modal-matched-user {
+  font-weight: bold;
+}
+
+.session-modal-time,
+.session-modal-title {
+  font-weight: normal;
+}
+.session-modal-matched-user-name {
+  color: #e0afa0;
+}
+
+.info-modal-icon {
+  color: red;
+}
+
+.test-result-container {
+  margin-top: 10px;
+}
+
+.hidden-test-icon {
+  margin-right: 5px;
+}
+
+.error-message {
+  overflow-x: auto;
+  overflow-y: auto; // Allows vertical scroll if content exceeds max-height
+  white-space: nowrap;
+  max-width: 100%;
+  padding: 4px;
+  min-height: 50px; // Adjust height as needed
+  max-height: 150px; // Adjust max height for scrollable area
+  border: 1px solid #ddd; // Optional: add a border for visibility
+  border-radius: 4px; // Optional: round the corners slightly
+  background-color: #f9f9f9; // Optional: light background color
+}

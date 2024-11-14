@@ -1,0 +1,42 @@
+.layout {
+  background: white;
+}
+
+.content {
+  background: white;
+}
+
+.login-card {
+  /* Rectangle 6698 */
+  margin: 8rem auto;
+  padding: 2rem 3rem;
+  box-sizing: border-box;
+  max-width: 26rem;
+  background: #ffffff;
+  border: 2px solid #8a817c;
+  box-shadow: 3px 4px 4px rgba(0, 0, 0, 0.25);
+  border-radius: 15px;
+}
+
+.registration-failed-text {
+  color: #f02849;
+  font-size: 13px;
+}
+
+.login-button {
+  width: 100%;
+}
+
+.registration-text {
+  color: #bcb8b1;
+  margin: auto;
+  text-align: center;
+}
+
+.create-account-link {
+  color: #8a817c;
+}
+
+.create-account-link:hover {
+  color: #463f3a;
+}
