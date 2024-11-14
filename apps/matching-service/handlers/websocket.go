@@ -2,15 +2,18 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"log"
+	"matching-service/databases"
 	"matching-service/models"
 	"matching-service/processes"
+	"matching-service/servers"
 	"matching-service/utils"
 	"net/http"
-	"strings"
-	"sync"
 
 	"github.com/gorilla/websocket"
+	"github.com/redis/go-redis/v9"
 )
 
 var (
@@ -20,17 +23,13 @@ var (
 			return true
 		},
 	}
-	// A map to hold active WebSocket connections per username
-	activeConnections = make(map[string]*websocket.Conn)
-	// A map to hold user's match ctx cancel function
-	matchContexts = make(map[string]context.CancelFunc)
-	// A map to hold user's match channels
-	matchFoundChannels = make(map[string]chan models.MatchFound)
-	mu                 sync.Mutex // Mutex for thread-safe access to activeConnections
 )
 
 // handleConnections manages WebSocket connections and matching logic.
 func HandleWebSocketConnections(w http.ResponseWriter, r *http.Request) {
+	rdb := servers.GetRedisClient()
+	ctx := context.Background()
+
 	// TODO: Parse the authorization header to validate the JWT token and get the user ID claim.
 
 	ws, err := upgrader.Upgrade(w, r, nil)
@@ -45,7 +44,7 @@ func HandleWebSocketConnections(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	log.Println("WebSocket connection established")
+	log.Printf("WebSocket connection established for port %s", utils.ExtractWebsocketPort(ws))
 
 	matchRequest, err := readMatchRequest(ws)
 	if err != nil {
@@ -53,36 +52,19 @@ func HandleWebSocketConnections(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Store WebSocket connection in the activeConnections map.
-	mu.Lock()
-	// Checks if user is already an existing websocket connection
-	if _, exists := activeConnections[matchRequest.Username]; exists {
-		mu.Unlock()
-		log.Printf("User %s is already connected, rejecting new connection.", matchRequest.Username)
-		ws.WriteJSON(models.MatchRejected{
-			Type:    "match_rejected",
-			Message: "You are already in a matchmaking queue. Please disconnect before reconnecting.",
-		})
-		ws.Close()
-		return
-	}
-	activeConnections[matchRequest.Username] = ws
-	matchCtx, matchCancel := context.WithCancel(context.Background())
-	matchContexts[matchRequest.Username] = matchCancel
+	// Subscribes to a channel that returns a message if a match is found
+	matchFoundPubsub := rdb.Subscribe(ctx, matchRequest.Username)
+	defer matchFoundPubsub.Close()
 
-	matchFoundChan := make(chan models.MatchFound)
-	matchFoundChannels[matchRequest.Username] = matchFoundChan
-	mu.Unlock()
+	// Create a context for user cancellation
+	userCtx, userCancel := context.WithCancel(ctx)
+	defer userCancel() // Ensure cancel is called to release resources
 
-	// Create a context for cancellation
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel() // Ensure cancel is called to release resources
+	// Create channel for handling errors
+	errorChan := make(chan error)
 
-	processes.EnqueueUser(processes.GetRedisClient(), matchRequest.Username, ctx)
-	processes.AddUserToTopicSets(processes.GetRedisClient(), matchRequest, ctx)
-	processes.StoreUserDetails(processes.GetRedisClient(), matchRequest, ctx)
-
-	timeoutCtx, timeoutCancel, err := createTimeoutContext()
+	// Create a context for matching timeout
+	timeoutCtx, timeoutCancel, err := utils.CreateTimeoutContext()
 	if err != nil {
 		log.Printf("Error creating timeout context: %v", err)
 		return
@@ -90,11 +72,11 @@ func HandleWebSocketConnections(w http.ResponseWriter, r *http.Request) {
 	defer timeoutCancel()
 
 	// Start goroutines for handling messages and performing matching.
-	go processes.ReadMessages(ws, ctx, cancel)
-	go processes.PerformMatching(matchRequest, context.Background(), matchFoundChannels) // Perform matching
+	go processes.ReadMessages(ws, userCancel)
+	go processes.PerformMatching(rdb, matchRequest, ctx, errorChan)
 
 	// Wait for a match, timeout, or cancellation.
-	waitForResult(ws, ctx, timeoutCtx, matchCtx, matchFoundChan, matchRequest.Username)
+	waitForResult(ws, userCtx, timeoutCtx, matchFoundPubsub, errorChan, matchRequest.Username)
 }
 
 // readMatchRequest reads the initial match request from the WebSocket connection.
@@ -103,108 +85,67 @@ func readMatchRequest(ws *websocket.Conn) (models.MatchRequest, error) {
 	if err := ws.ReadJSON(&matchRequest); err != nil {
 		return matchRequest, err
 	}
-	// Get the remote address (client's IP and port)
-	clientAddr := ws.RemoteAddr().String()
 
-	// Extract the port (after the last ':')
-	clientPort := clientAddr[strings.LastIndex(clientAddr, ":")+1:]
-
-	log.Printf("Received match request: %v from client port: %s", matchRequest, clientPort)
+	log.Printf("Received match request: %v from client port: %s", matchRequest, utils.ExtractWebsocketPort(ws))
 	return matchRequest, nil
-}
-
-// createTimeoutContext sets up a timeout context based on configuration.
-func createTimeoutContext() (context.Context, context.CancelFunc, error) {
-	timeoutDuration, err := utils.GetTimeoutDuration()
-	if err != nil {
-		return nil, nil, err
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
-	return ctx, cancel, nil
 }
 
 // Cleans up the data associated with the user before ending the websocket connection.
 // If user is already removed, then nothing happens.
+// This function is unaffected by the external context.
 func cleanUpUser(username string) {
-	// Cleanup Redis
-	processes.CleanUpUser(processes.GetRedisClient(), username, context.Background())
+	rdb := servers.GetRedisClient()
+	ctx := context.Background()
 
-	// Removes the match context and active
-	if cancelFunc, exists := matchContexts[username]; exists {
-		cancelFunc()
-		delete(matchContexts, username)
+	// Obtain lock with retry
+	lock, err := servers.ObtainRedisLock(ctx)
+	if err != nil {
+		return
 	}
-	if _, exists := activeConnections[username]; exists {
-		delete(activeConnections, username)
-	}
-	if _, exists := matchFoundChannels[username]; exists {
-		delete(matchFoundChannels, username)
-	}
+	defer lock.Release(ctx)
+
+	// Cleanup Redis
+	databases.CleanUpUser((*redis.Tx)(rdb.Conn()), username, ctx)
 }
 
 // waitForResult waits for a match result, timeout, or cancellation.
-func waitForResult(ws *websocket.Conn, ctx, timeoutCtx, matchCtx context.Context, matchFoundChan chan models.MatchFound, username string) {
+func waitForResult(ws *websocket.Conn, userCtx, timeoutCtx context.Context, matchFoundPubsub *redis.PubSub, errorChan chan error, username string) {
 	select {
-	case <-ctx.Done():
-		log.Println("Matching cancelled")
+	case <-userCtx.Done():
+		log.Printf("Matching cancelled for port %v", utils.ExtractWebsocketPort(ws))
 		cleanUpUser(username)
 		return
 	case <-timeoutCtx.Done():
-		log.Println("Connection timed out")
+		log.Printf("Connection timed out for port %v", utils.ExtractWebsocketPort(ws))
 		sendTimeoutResponse(ws)
 		cleanUpUser(username)
 		return
-	case <-matchCtx.Done():
-		log.Println("Match found for user: " + username)
-
-		// NOTE: user is already cleaned-up in the other process,
-		// so there is no need to clean up again.
-		return
-	case result, ok := <-matchFoundChan:
+	case err, ok := <-errorChan:
 		if !ok {
-			// Channel closed without a match, possibly due to context cancellation
-			log.Println("Match channel closed without finding a match")
 			return
 		}
-		log.Println("Match found for user: " + username)
-		// Notify the user about the match
-		notifyMatches(result.User, result)
-
-		// cleaning up from the global maps used still required
-		if _, exists := matchContexts[username]; exists {
-			delete(matchContexts, username)
+		log.Printf("Error occured performing matching: %v", err)
+		if errors.Is(err, models.ExistingUserError) {
+			sendDuplicateUserRejectionResponse(ws)
+		} else {
+			sendDefaultRejectionResponse(ws)
+			cleanUpUser(username)
 		}
-		if _, exists := activeConnections[username]; exists {
-			delete(activeConnections, username)
-		}
-		if _, exists := matchFoundChannels[username]; exists {
-			delete(matchFoundChannels, username)
-		}
-
 		return
-	}
-}
-
-// sendTimeoutResponse sends a timeout message to the WebSocket client.
-func sendTimeoutResponse(ws *websocket.Conn) {
-	result := models.Timeout{
-		Type:    "timeout",
-		Message: "No match found. Please try again later.",
-	}
-	if err := ws.WriteJSON(result); err != nil {
-		log.Printf("write error: %v", err)
-	}
-}
-
-// Notify matches
-func notifyMatches(username string, result models.MatchFound) {
-	mu.Lock()
-	defer mu.Unlock()
-
-	// Send message to matched user
-	if userConn, userExists := activeConnections[username]; userExists {
-		if err := userConn.WriteJSON(result); err != nil {
-			log.Printf("Error sending message to user %s: %v\n", username, err)
+	case msg, ok := <-matchFoundPubsub.Channel():
+		if !ok {
+			return
 		}
+		var result models.MatchQuestionFound
+		// Unmarshal the JSON message into the struct
+		err := json.Unmarshal([]byte(msg.Payload), &result)
+		if err != nil {
+			log.Printf("Error unmarshaling JSON: %v", err)
+			return
+		}
+
+		// Notify the user about the match
+		sendMatchFoundResponse(ws, result.User, result)
+		return
 	}
 }

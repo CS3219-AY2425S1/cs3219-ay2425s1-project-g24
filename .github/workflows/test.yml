@@ -10,9 +10,82 @@ on:
     branches:
       - main
       - staging
+  workflow_dispatch:
 
 jobs:
-  test:
+  question-service-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      
+      - name: Set up .env
+        env:
+          QUESTION_FIREBASE_CREDENTIAL_PATH: ${{ vars.QUESTION_SERVICE_FIREBASE_CREDENTIAL_PATH }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          EXECUTION_SERVICE_URL: ${{ vars.EXECUTION_SERVICE_URL }}
+        run: |
+          cd ./apps/question-service
+          echo "FIREBASE_CREDENTIAL_PATH=$QUESTION_FIREBASE_CREDENTIAL_PATH" >> .env
+          echo "JWT_SECRET=$JWT_SECRET" >> .env
+          echo "EXECUTION_SERVICE_URL=$EXECUTION_SERVICE_URL" >> .env
+      
+      - name: Set up credentials
+        env:
+          QUESTION_FIREBASE_JSON: ${{ secrets.QUESTION_SERVICE_FIREBASE_CREDENTIAL }}
+          QUESTION_FIREBASE_CREDENTIAL_PATH: ${{ vars.QUESTION_SERVICE_FIREBASE_CREDENTIAL_PATH }}
+        run: |
+          cd ./apps/question-service
+          echo "$QUESTION_FIREBASE_JSON" > "./$QUESTION_FIREBASE_CREDENTIAL_PATH"
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with: 
+          go-version: '1.23.x'
+
+      - name: Install Go dependencies
+        run: |
+          cd ./apps/question-service
+          go mod tidy
+
+      - name: Install firebase tools
+        run: curl -sL firebase.tools | bash
+      
+      - name: Run Go tests with Firebase emulator
+        run: firebase emulators:exec --only firestore 'cd ./apps/question-service; go test -v ./tests'
+
+  frontend-unit-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup .env
+        run: |
+          cd ./apps/frontend
+          cp .env.example  .env
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '22'
+
+      - name: Install pnpm
+        run: npm i -g pnpm
+
+      - name: Install dependencies
+        run: |
+          cd ./apps/frontend
+          pnpm i
+
+      - name: Run tests
+        run: |
+          cd ./apps/frontend
+          pnpm unit-test
+
+  test-docker-compose:
     runs-on: ubuntu-latest
 
     steps:
@@ -29,22 +102,36 @@ jobs:
           QUESTION_SERVICE_URL: ${{ vars.QUESTION_SERVICE_URL }}
           USER_SERVICE_URL: ${{ vars.USER_SERVICE_URL }}
           MATCHING_SERVICE_URL: ${{ vars.MATCHING_SERVICE_URL }}
+          HISTORY_SERVICE_URL: ${{ vars.HISTORY_SERVICE_URL }}
+          SIGNALLING_SERVICE_URL: ${{ vars.SIGNALLING_SERVICE_URL }}
+          EXECUTION_SERVICE_URL: ${{ vars.EXECUTION_SERVICE_URL }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          FIREBASE_CREDENTIAL_PATH: ${{ vars.QUESTION_SERVICE_FIREBASE_CREDENTIAL_PATH }}
+          QUESTION_FIREBASE_CREDENTIAL_PATH: ${{ vars.QUESTION_SERVICE_FIREBASE_CREDENTIAL_PATH }}
+          HISTORY_FIREBASE_CREDENTIAL_PATH: ${{ vars.HISTORY_SERVICE_FIREBASE_CREDENTIAL_PATH }}
+          EXECUTION_FIREBASE_CREDENTIAL_PATH: ${{ vars.EXECUTION_SERVICE_FIREBASE_CREDENTIAL_PATH }}
           DB_CLOUD_URI: ${{ secrets.USER_SERVICE_DB_CLOUD_URI }}
           USER_SERVICE_PORT: ${{ vars.USER_SERVICE_PORT }}
           MATCHING_SERVICE_PORT: ${{ vars.MATCHING_SERVICE_PORT }}
+          HISTORY_SERVICE_PORT: ${{ vars.HISTORY_SERVICE_PORT }}
+          SIGNALLING_SERVICE_PORT: ${{ vars.SIGNALLING_SERVICE_PORT }}
+          EXECUTION_SERVICE_PORT: ${{ vars.EXECUTION_SERVICE_PORT }}
           MATCHING_SERVICE_TIMEOUT: ${{ vars.MATCHING_SERVICE_TIMEOUT }}
           REDIS_URL: ${{ vars.REDIS_URL }}
+          RABBITMQ_URL: ${{ vars.RABBITMQ_URL }}
+          QUESTION_SERVICE_GRPC_URL: ${{ vars.QUESTION_SERVICE_GPRC_URL }}
         run: |
           cd ./apps/frontend
           echo "NEXT_PUBLIC_QUESTION_SERVICE_URL=$QUESTION_SERVICE_URL" >> .env
           echo "NEXT_PUBLIC_USER_SERVICE_URL=$USER_SERVICE_URL" >> .env
           echo "NEXT_PUBLIC_MATCHING_SERVICE_URL=$MATCHING_SERVICE_URL" >> .env
+          echo "NEXT_PUBLIC_HISTORY_SERVICE_URL=$HISTORY_SERVICE_URL" >> .env
+          echo "NEXT_PUBLIC_SIGNALLING_SERVICE_URL=$SIGNALLING_SERVICE_URL" >> .env
+          echo "NEXT_PUBLIC_EXECUTION_SERVICE_URL=EXECUTION_SERVICE_URL" >> .env
 
           cd ../question-service
-          echo "FIREBASE_CREDENTIAL_PATH=$FIREBASE_CREDENTIAL_PATH" >> .env
+          echo "FIREBASE_CREDENTIAL_PATH=$QUESTION_FIREBASE_CREDENTIAL_PATH" >> .env
           echo "JWT_SECRET=$JWT_SECRET" >> .env
+          echo "EXECUTION_SERVICE_URL=$EXECUTION_SERVICE_URL" >> .env
 
           cd ../user-service
           echo "DB_CLOUD_URI=$DB_CLOUD_URI" >> .env
@@ -56,14 +143,39 @@ jobs:
           echo "MATCH_TIMEOUT=$MATCHING_SERVICE_TIMEOUT" >> .env
           echo "JWT_SECRET=$JWT_SECRET" >> .env
           echo "REDIS_URL=$REDIS_URL" >> .env
+          echo "QUESTION_SERVICE_GRPC_URL=$QUESTION_SERVICE_GRPC_URL" >> .env
+
+          cd ../history-service
+          echo "FIREBASE_CREDENTIAL_PATH=$HISTORY_FIREBASE_CREDENTIAL_PATH" >> .env
+          echo "PORT=$HISTORY_SERVICE_PORT" >> .env
+          echo "RABBMITMQ_URL=$RABBITMQ_URL" >> .env
+          
+          cd ../execution-service
+          echo "FIREBASE_CREDENTIAL_PATH=$EXECUTION_FIREBASE_CREDENTIAL_PATH" >> .env
+          echo "PORT=$EXECUTION_SERVICE_PORT" >> .env
+          echo "HISTORY_SERVICE_URL=$HISTORY_SERVICE_URL" >> .env
+          echo "RABBMITMQ_URL=$RABBITMQ_URL" >> .env
+
+          cd ../signalling-service
+          echo "PORT=$SIGNALLING_SERVICE_PORT" >> .env
 
       - name: Create Database Credential Files
         env:
-          FIREBASE_JSON: ${{ secrets.QUESTION_SERVICE_FIREBASE_CREDENTIAL }}
-          FIREBASE_CREDENTIAL_PATH: ${{ vars.QUESTION_SERVICE_FIREBASE_CREDENTIAL_PATH }}
+          QUESTION_FIREBASE_JSON: ${{ secrets.QUESTION_SERVICE_FIREBASE_CREDENTIAL }}
+          QUESTION_FIREBASE_CREDENTIAL_PATH: ${{ vars.QUESTION_SERVICE_FIREBASE_CREDENTIAL_PATH }}
+          HISTORY_FIREBASE_JSON: ${{ secrets.HISTORY_SERVICE_FIREBASE_CREDENTIAL }}
+          HISTORY_FIREBASE_CREDENTIAL_PATH: ${{ vars.HISTORY_SERVICE_FIREBASE_CREDENTIAL_PATH }}
+          EXECUTION_FIREBASE_JSON: ${{ secrets.EXECUTION_SERVICE_FIREBASE_CREDENTIAL }}
+          EXECUTION_FIREBASE_CREDENTIAL_PATH: ${{ vars.EXECUTION_SERVICE_FIREBASE_CREDENTIAL_PATH }}
         run: |
           cd ./apps/question-service
-          echo "$FIREBASE_JSON" > "./$FIREBASE_CREDENTIAL_PATH"
+          echo "$QUESTION_FIREBASE_JSON" > "./$QUESTION_FIREBASE_CREDENTIAL_PATH"
+
+          cd ../history-service
+          echo "$HISTORY_FIREBASE_JSON" > "./$HISTORY_FIREBASE_CREDENTIAL_PATH"
+          
+          cd ../execution-service
+          echo "$EXECUTION_FIREBASE_JSON" > "./$EXECUTION_FIREBASE_CREDENTIAL_PATH"
 
       - name: Build and Run Services
         run: |
@@ -85,13 +197,21 @@ jobs:
           USER_SERVICE_URL: ${{ vars.USER_SERVICE_URL }}
           QUESTION_SERVICE_URL: ${{ vars.QUESTION_SERVICE_URL }}
           MATCHING_SERVICE_URL: ${{ vars.MATCHING_SERVICE_URL }}
+          HISTORY_SERVICE_URL: ${{ vars.HISTORY_SERVICE_URL }}
+          SIGNALLING_SERVICE_URL: ${{ vars.SIGNALLING_SERVICE_URL }}
+          EXECUTION_SERVICE_URL: ${{ vars.EXECUTION_SERVICE_URL }}
         run: |
+          docker ps -a
           echo "Testing Question Service..."
           curl -sSL -o /dev/null $QUESTION_SERVICE_URL && echo "Question Service is up"
           echo "Testing User Service..."
           curl -fsSL -o /dev/null $USER_SERVICE_URL && echo "User Service is up"
           echo "Testing Frontend..."
           curl -fsSL -o /dev/null $FRONTEND_URL && echo "Frontend is up"
+          echo "Testing History Service..."
+          curl -fsSL -o /dev/null $HISTORY_SERVICE_URL && echo "History Service is up"
+          echo "Testing Execution Service..."
+          curl -fsSL -o /dev/null $EXECUTION_SERVICE_URL && echo "Execution Service is up"
           echo "Testing Matching Service..."
           if ! (echo "Hello" | websocat $MATCHING_SERVICE_URL); then
             echo "WebSocket for Matching Service is not live"
@@ -99,5 +219,37 @@ jobs:
             echo "WebSocket for Matching Service is live"
           fi
           # Add in test for matching service in the future
-
+          echo "Testing Signalling Service..."
+          if ! (echo "Hello" | websocat $SIGNALLING_SERVICE_URL); then
+            echo "WebSocket for Signalling Service is not live"
+          else
+            echo "WebSocket for Signalling Service is live"
+          fi
           # We can add more tests here
+      
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.1.4
+
+      - name: Install dependencies
+        run: |
+          cd ./apps/frontend
+          pnpm i
+      
+      - name: Install Chrome WebDriver
+        uses: nanasess/setup-chromedriver@v2
+        with:
+          chromedriver-version: '130.0.6723.116'
+      - name: Install Edge
+        uses: browser-actions/setup-edge@v1
+        with:
+          edge-version: stable
+
+      - name: Install Geckodriver
+        uses: browser-actions/setup-geckodriver@latest
+        
+      - name: Run Browser Test
+        run: |
+          cd ./apps/frontend
+          pnpm browser-test

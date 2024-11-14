@@ -1,247 +1,84 @@
-// start of code editor classes
-.code-editor-layout {
-  background: white !important;
-  height: 97vh;
-  overflow: hidden;
-}
-
-.code-editor-content {
+.question-layout {
+  background: white;
   display: flex;
   flex-direction: column;
+  height: 100vh;
 }
 
-.entire-page {
+.question-content {
+  background: white;
   flex: 1;
+  // overflow-y: auto;
+}
+
+.first-col,
+.second-col {
+  height: 90vh;
+}
+
+.question-row {
+  padding: 0rem 1rem;
+}
+
+.history-row {
+  padding: 0.5rem 0.25rem 0.25rem;
+  height: 40%;
+}
+
+.code-row {
+  flex: 1;
+  height: 60%;
+  padding: 0.5rem 0.25rem 0.25rem;
+}
+
+.test-top-container {
+  display: flex;
+  justify-content: space-between;
+  height: 50%;
+}
+
+.history-container,
+.code-container {
+  border: 2px solid #463f3a;
+  border-radius: 10px;
+  width: 100%;
+  height: 100%;
   padding: 1rem;
 }
 
-.problem-description {
-  height: 70%;
-}
-
-.code-editor {
-  height: 100.5% !important;
-}
-
-.test-cases {
-  height: 30%;
-}
-
-.session-details {
-  height: 20%;
-}
-
-.chat-box {
-  height: 80%;
-}
-
-.boxes {
-  border-radius: 10px;
-  border: solid;
-  margin: 4px;
-  padding: 5px;
-}
-
-.problem-description-info {
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  margin-left: 5px;
-  padding: 8px;
-}
-
-.problem-description-top {
-  display: inline-flex;
-  flex-wrap: nowrap;
-  width: 100%;
-}
-
-.problem-description-title {
-  padding: 0%;
-  margin: 0%;
-}
-
-.problem-solve-status {
-  margin-left: auto;
-}
-
-.test-cases-div {
-  height: 100%;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 8px;
-}
-
-.test-cases-top {
-  display: inline-flex;
-  flex-wrap: nowrap;
-  margin-bottom: 5px;
-}
-
-.testcase-title {
-  padding: 0%;
-  padding-left: 1%;
-  margin: 0%;
-}
-
-.runtestcases-button {
-  margin-left: auto;
-}
-
-.testcase-buttons {
-  width: 100%;
-  padding-left: 1%;
-  display: inline-flex;
-  gap: 5px;
-}
-
-.testcase-code-div {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  margin-top: 10px;
-}
-
-.testcase-code {
-  // max-height: 100%;
-  // height: 100%;
-  // padding-top: 4px;
-  // padding-left: 1%;
-  // flex:1;
-  height: 100%;
-  flex: 1 1 auto;
-}
-
-// .code-editor-box {
-//   height: 100% !important;
-//   flex-direction: column;
-//   display: flex;
-//   margin-bottom: 4px !important;
-// }
-
-.code-editor-div {
-  height: 100%;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 8px;
-}
-
-.code-editor-title {
-  padding: 0%;
-  padding-left: 1%;
-  margin: 0%;
-}
-
-.code-editor-code-div {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  margin-top: 10px;
-}
-
-.code-editor-code {
-  height: 100%;
-  flex: 1 1 auto;
-}
-
-.code-editor-top {
-  display: inline-flex;
-  flex-wrap: nowrap;
+.history-language {
+  margin: auto 8px auto 0px;
 }
 
 .language-select {
-  display: inline-flex;
-  flex-wrap: nowrap;
-  margin-top: 4px;
+  width: 120px;
 }
 
-.submit-solution-button {
-  margin-left: auto;
-}
-
-.select-language-button {
-  width: max-content;
-}
-
-.session-details-title {
-  padding: 0%;
-  padding-left: 1%;
-  margin: 0%;
-}
-
-.session-details-top {
-  display: inline-flex;
-  flex-wrap: nowrap;
-}
-
-.session-details-div {
-  height: 100%;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 8px;
-}
-
-.end-session-button {
-  margin-left: auto;
-}
-
-.session-details-text-div {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  margin-top: 10px;
-}
-
-.session-details-text {
-  height: 100%;
-  flex: 1 1 auto;
-  margin-left: 5px;
-}
-
-.chat-box-div {
-  height: 100%;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 8px;
-}
-
-.chat-box-top {
-  display: inline-flex;
-  flex-wrap: nowrap;
-}
-
-.chat-box-title {
-  padding: 0%;
-  padding-left: 1%;
-  margin: 0%;
-}
-
-.complexity-div {
-  margin: 4px 0;
-}
-
-.topic-label,
-.language-text {
+.question-title,
+.test-title,
+.code-title,
+.history-title {
+  font-size: 16px;
   font-weight: bold;
 }
 
-.tag-container {
-  margin: 4px 0;
+.question-difficulty,
+.question-topic {
+  margin: 4px 0px;
 }
 
-.description-text {
-  text-align: justify;
-  text-justify: inter-word;
-  line-height: 1.3;
-}
-
-.session-headers {
+.topic-label {
+  font-size: 14px;
   font-weight: bold;
+}
+
+.title-icons {
+  margin-right: 4px;
+}
+
+.submission-header-detail {
+  font-weight: normal;
+  display: flex;
+  flex-direction: row;
+  padding: 0px 10px 0px 0px;
 }

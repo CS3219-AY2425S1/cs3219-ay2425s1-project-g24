@@ -1,0 +1,39 @@
+.test-section {
+  border: 2px solid #463f3a;
+  border-radius: 10px;
+  width: 100%;
+  padding: 1rem;
+}
+
+.test-title {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.test-top-box {
+  display: flex;
+  justify-content: space-between;
+}
+
+.test-case-button {
+  width: fit-content;
+}
+
+.title-icons {
+  margin-right: 4px;
+}
+
+.test-button-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  padding-left: 10px;
+
+  .spinner-container {
+    width: 24px;
+    min-height: 24px;
+    display: flex;
+    align-items: center;
+  }
+}

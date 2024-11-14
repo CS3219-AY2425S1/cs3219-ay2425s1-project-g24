@@ -1,0 +1,30 @@
+.question-container {
+  border: 2px solid #463f3a;
+  border-radius: 10px;
+  width: 100%;
+  padding: 1rem;
+}
+
+.question-title {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.question-difficulty,
+.question-topic {
+  margin: 4px 0px;
+}
+
+.topic-label {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.question-description {
+  text-align: justify;
+  text-justify: inter-word;
+  line-height: 1.3;
+  margin-top: 1rem;
+  max-height: 270px;
+  overflow-y: scroll;
+}

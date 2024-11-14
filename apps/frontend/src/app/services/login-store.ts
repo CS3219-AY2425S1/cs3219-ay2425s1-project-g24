@@ -1,15 +1,26 @@
+"use client";
+
 const KEY: string = "TOKEN";
 
 export function setToken(token: string): void {
-    window.localStorage[KEY] = token
+    document.cookie = `${KEY}=${token}`
 }
 
 export function getToken(): string {
-    return KEY in window.localStorage ? window.localStorage[KEY] : ""
+    const keyValue = document.cookie.split("; ").find(kv => kv.startsWith(`${KEY}=`))
+    if (keyValue == undefined) {
+        return "";
+    }
+
+    const [_, value] = keyValue.split("=");
+
+    if (value == undefined) {
+        return "";
+    }
+
+    return value;
 }
 
 export function deleteToken() {
-    if (KEY in window.localStorage) {
-        window.localStorage.removeItem(KEY);
-    }
+    document.cookie = `${KEY}=nothinghere;expires=0`;
 }

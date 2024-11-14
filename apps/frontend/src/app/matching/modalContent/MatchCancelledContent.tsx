@@ -3,14 +3,14 @@ import 'typeface-montserrat';
 import './styles.scss';
 import { handleReselectMatchOptions, handleRetryMatch } from '../handlers';
 import { formatTime } from '@/utils/DateTime';
+import { Button, Form } from 'antd';
 
 interface Props {
-    retry(): void,
     reselect(): void,
     canceledIn: number,
 }
 
-const MatchCancelledContent: React.FC<Props> = ({retry, reselect, canceledIn}) => {
+const MatchCancelledContent: React.FC<Props> = ({reselect, canceledIn}) => {
     return (
         <div className="match-cancelled-content">
             <div className="cancel-icon-container">
@@ -28,11 +28,11 @@ const MatchCancelledContent: React.FC<Props> = ({retry, reselect, canceledIn}) =
             <div className="match-status-message">
                 Your match request has been cancelled after waiting {formatTime(canceledIn)}
             </div>
-            {/* <button className="retry-match-button"
-                onClick={retry}
-            >
-                Retry
-            </button> */}
+            <Form.Item noStyle>
+                <button className="retry-match-button" type="submit">
+                    Retry
+                </button>
+            </Form.Item>
             <button className="reselect-match-options-button"
                 onClick={reselect}
             >

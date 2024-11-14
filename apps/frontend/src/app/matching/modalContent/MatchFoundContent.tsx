@@ -5,22 +5,18 @@ import 'typeface-montserrat';
 import './styles.scss';
 import { handleCancelMatch, handleJoinMatch } from '../handlers';
 import { formatTime } from '@/utils/DateTime';
-import { useTimer } from "react-timer-hook"
 
 interface Props {
     join(): void,
     cancel(): void,
     name1: string, // user's username
     name2: string, // matched user's username
+    joiningIn: number,
 }
 
 const TIMEOUT = 10;
 
-const MatchFoundContent: React.FC<Props> = ({join, cancel, name1: me, name2: you}) => {
-    const { totalSeconds } = useTimer({
-        expiryTimestamp: new Date(Date.now() + 10 * 1000),
-        onExpire: join
-    });
+const MatchFoundContent: React.FC<Props> = ({join, cancel, name1: me, name2: you, joiningIn}) => {
     
     return (
         <div className="matching-found-content">
@@ -45,20 +41,20 @@ const MatchFoundContent: React.FC<Props> = ({join, cancel, name1: me, name2: you
             </div>
             <div className="match-status-label">Match Found!</div>
             <div className="match-status-message">
-                Joining in... {formatTime(totalSeconds)}
+                Joining in... {formatTime(joiningIn)}
             </div>
             <button className="join-match-button"
                 onClick={join}
             >
                 Join
             </button>
-            <button className="cancel-match-button"
+            {/* <button className="cancel-match-button"
                 onClick={cancel}
             >
                 Cancel
-            </button>
+            </button> */}
         </div>
-    )
-}
+    );
+};
 
 export default MatchFoundContent;

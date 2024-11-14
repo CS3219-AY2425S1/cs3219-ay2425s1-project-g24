@@ -65,6 +65,7 @@ func (s *Service) CreateQuestion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	defer iter.Stop()
 
 	// Reference to the document where we store the last ID
 	counterDocRef := s.Client.Collection("counters").Doc("questions")

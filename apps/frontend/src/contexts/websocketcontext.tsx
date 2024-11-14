@@ -13,12 +13,15 @@ export type SocketState = {
     cancel(): void;
     timeout(): void;
 };
+
 export type MatchInfo = {
     matchId: string;
-    partnerId: string;
-    myName: string;
-    partnerName: string;
+    user: string;
+    matchedUser: string;
+    questionDocRefId: string;
+    matchedTopics: string[];
 }
+
 export type MatchState = SocketState | {
     state: "found";
     info: MatchInfo;
@@ -26,6 +29,7 @@ export type MatchState = SocketState | {
 } | {
     state: "timeout";
     ok(): void;
+    start(req: MatchRequestParams): void;
 };
 
 export const WebSocketContext = createContext<MatchState | null>(null);

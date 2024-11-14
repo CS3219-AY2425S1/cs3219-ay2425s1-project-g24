@@ -17,17 +17,15 @@ export type MatchRequestParams = {
 }
 
 export type MatchFoundResponse = {
-    type: "match_found",
-    matchId: number,
-    partnerId: number,
-    partnerName: string,
-} | {
-    type: "match_found",
-    matchId: string,
+    type: "match_question_found",
+    match_id: string,
     user: string,
-    matchedUser: string,
-    topic: string | string[],
-    difficulty: string
+    matched_user: string,
+    matched_topics: string[],
+    question_doc_ref_id: string,
+    question_name: string,
+    question_difficulty: string,
+    question_topics: string[],
 }
 
 export type MatchTimeoutResponse = {
@@ -61,7 +59,7 @@ export default function useMatching(): MatchState {
                 return;
             }
 
-            if (responseJson.type == "match_found") {
+            if (responseJson.type == "match_question_found") {
                 setIsSocket(false);
 
                 const info: MatchInfo = parseInfoFromResponse(responseJson);
@@ -98,6 +96,7 @@ export default function useMatching(): MatchState {
         setSte({
             state: "timeout",
             ok: cancel,
+            start
         });
     }
 
@@ -136,20 +135,11 @@ export default function useMatching(): MatchState {
 }
 
 function parseInfoFromResponse(responseJson: MatchFoundResponse): MatchInfo {
-    // test whether old or new
-    if ("partnerId" in responseJson) {
-        return {
-            matchId: responseJson.matchId?.toString() ?? "unknown",
-            partnerId: responseJson.partnerId?.toString() ?? "unknown",
-            partnerName: responseJson.partnerName ?? "unknown",
-            myName: "unknown",
-        };
-    } else {
-        return {
-            matchId: responseJson.matchId?.toString() ?? "unknown",
-            partnerId: "unknown",
-            partnerName: responseJson.matchedUser ?? "unknown",
-            myName: responseJson.user ?? "unknown",
-        };
-    }
+    return {
+        matchId: responseJson.match_id?.toString() ?? "unknown",
+        matchedUser: responseJson.matched_user ?? "unknown",
+        user: responseJson.user ?? "unknown",
+        questionDocRefId: responseJson.question_doc_ref_id ?? "unknown",
+        matchedTopics: responseJson.matched_topics ?? [],
+    };
 }

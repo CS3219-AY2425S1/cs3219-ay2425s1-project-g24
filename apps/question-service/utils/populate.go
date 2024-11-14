@@ -1,8 +1,13 @@
 package utils
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"fmt"
 	"log"
+	"net/http"
+	"os"
 	"question-service/models"
 	"time"
 
@@ -12,8 +17,9 @@ import (
 
 // PopulateSampleQuestionsInTransaction deletes all existing questions and then adds new ones in a single transaction
 func populateSampleQuestionsInTransaction(ctx context.Context, client *firestore.Client) error {
+
 	// Sample questions to be added after deletion
-	sampleQuestions := []models.Question{
+	var sampleQuestions = []models.Question{
 		{
 			Title:      "Reverse a String",
 			Categories: []string{"Strings", "Algorithms"},
@@ -90,8 +96,8 @@ And table Address with the following columns:
 4. state (varchar)
 addressId is the primary key.
 
-Write a solution to report the first name, last name, city, and state of each person in the Person table. 
-If the address of a personId is not present in the Address table, 
+Write a solution to report the first name, last name, city, and state of each person in the Person table.
+If the address of a personId is not present in the Address table,
 report null instead. Return the result table in any order.`,
 		},
 		{
@@ -263,6 +269,7 @@ Return the result table in any order.`,
 				return err // Abort transaction if delete fails
 			}
 		}
+		defer iter.Stop()
 
 		// Step 2: Add new questions
 		currentCounter := 0
@@ -293,7 +300,59 @@ Return the result table in any order.`,
 	})
 }
 
-func Populate(client *firestore.Client) {
+func repopulateTests(dbClient *firestore.Client) error {
+	ctx := context.Background()
+
+	executionServiceUrl := os.Getenv("EXECUTION_SERVICE_URL")
+	url := executionServiceUrl + "tests/populate"
+
+	// get title and docRefId of all questions
+	var questions []map[string]string
+	iter := dbClient.Collection("questions").Documents(ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("failed to fetch question: %v", err)
+		}
+
+		questions = append(questions, map[string]string{
+			"title":    doc.Data()["title"].(string),
+			"docRefId": doc.Ref.ID,
+		})
+	}
+	defer iter.Stop()
+
+	jsonData, err := json.Marshal(questions)
+	if err != nil {
+		return fmt.Errorf("failed to marshal question titles: %v", err)
+	}
+
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return fmt.Errorf("failed to create request to populate tests: %v", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	httpClient := &http.Client{}
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to populate tests: %v", err)
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("failed to populate tests: %v", resp.Status)
+	}
+
+	return nil
+}
+
+func Populate(client *firestore.Client, populateTests bool) {
 	ctx := context.Background()
 
 	// Run the transaction to delete all questions and add new ones
@@ -302,5 +361,17 @@ func Populate(client *firestore.Client) {
 		log.Fatalf("Failed to populate sample questions in transaction: %v", err)
 	}
 
-	log.Println("Counter reset, all questions deleted and sample questions added successfully in a transaction.")
+	if !populateTests {
+		log.Println("Counter reset, all questions deleted and sample questions added successfully in a transaction.")
+		return
+	}
+
+	// Populate testcases in the execution-service
+	err = repopulateTests(client)
+	if err != nil {
+		log.Fatalf("Failed to populate testcases: %v", err)
+	}
+
+	log.Println("Counter reset, " +
+		"all questions deleted and sample questions added successfully in a transaction. Testcases repopulated in execution-service.")
 }

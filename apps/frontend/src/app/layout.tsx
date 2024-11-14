@@ -25,9 +25,7 @@ const RootLayout = ({
         }}
       >
         <AntdRegistry>
-          <WebSocketProvider>
-            {children}
-          </WebSocketProvider>
+          <WebSocketProvider>{children}</WebSocketProvider>
         </AntdRegistry>
       </ConfigProvider>
     </body>

@@ -8,12 +8,24 @@ type MatchRequest struct {
 }
 
 type MatchFound struct {
-	Type        string `json:"type"`
-	MatchID     string `json:"matchId"`
-	User        string `json:"user"`        // username
-	MatchedUser string `json:"matchedUser"` // matched username
-	Topic       string `json:"topic"`       // matched topic
-	Difficulty  string `json:"difficulty"`  // matched difficulty
+	Type                string   `json:"type"`
+	MatchID             string   `json:"match_id"`
+	User                string   `json:"user"`
+	MatchedUser         string   `json:"matched_user"`
+	MatchedTopics       []string `json:"matched_topics"`
+	MatchedDifficulties []string `json:"matched_difficulties"`
+}
+
+type MatchQuestionFound struct {
+	Type               string   `json:"type"`
+	MatchID            string   `json:"match_id"`
+	User               string   `json:"user"`
+	MatchedUser        string   `json:"matched_user"`
+	MatchedTopics      []string `json:"matched_topics"`
+	QuestionDocRefID   string   `json:"question_doc_ref_id"`
+	QuestionName       string   `json:"question_name"`
+	QuestionDifficulty string   `json:"question_difficulty"`
+	QuestionTopics     []string `json:"question_topics"`
 }
 
 type Timeout struct {

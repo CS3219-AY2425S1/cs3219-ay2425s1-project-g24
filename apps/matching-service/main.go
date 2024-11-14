@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"matching-service/handlers"
-	"matching-service/processes"
+	"matching-service/servers"
 	"net/http"
 	"os"
 
@@ -12,24 +12,30 @@ import (
 )
 
 func main() {
-	// Set up environment
+	setUpEnvironment()
+	client := servers.SetupRedisClient()
+	defer client.Close()
+	grpcClient := servers.InitGrpcServer()
+	defer grpcClient.Close()
+	setupRoutes()
+	startServer()
+}
+
+func setUpEnvironment() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatalf("err loading: %v", err)
 	}
+}
 
-	// Setup redis client
-	processes.SetupRedisClient()
-
-	// Run a goroutine that matches users
-
-	// Routes
+func setupRoutes() {
 	http.HandleFunc("/match", handlers.HandleWebSocketConnections)
+}
 
-	// Start the server
+func startServer() {
 	port := os.Getenv("PORT")
 	log.Println(fmt.Sprintf("Server starting on :%s", port))
-	err = http.ListenAndServe(fmt.Sprintf(":%s", port), nil)
+	err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}

@@ -11,13 +11,17 @@ import { Header as AntdHeader } from "antd/es/layout/layout";
 import { useRouter } from "next/navigation";
 import "./styles.scss";
 import DropdownButton from "antd/es/dropdown/dropdown-button";
-import { LogoutOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  HistoryOutlined,
+  LogoutOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
+import { deleteToken } from "@/app/services/login-store";
 
 interface HeaderProps {
   selectedKey: string[] | undefined;
 }
 const Header = (props: HeaderProps): JSX.Element => {
-  
   const { push } = useRouter();
   // Stores the details for the header buttons
   const items = [
@@ -44,10 +48,20 @@ const Header = (props: HeaderProps): JSX.Element => {
       onClick: () => push("/profile"),
     },
     {
-      type: "divider",
+      key: 1,
+      label: (
+        <div className="profile-menu-items">
+          <HistoryOutlined className="profile-menu-icon" /> History
+        </div>
+      ),
+      onClick: () => push("/history"),
     },
     {
       key: 2,
+      type: "divider",
+    },
+    {
+      key: 3,
       label: (
         <div className="profile-menu-items">
           <LogoutOutlined className="profile-menu-icon" /> Logout
@@ -55,6 +69,7 @@ const Header = (props: HeaderProps): JSX.Element => {
       ),
       onClick: () => {
         // Clear away the previously stored jwt token in localstorage
+        deleteToken();
         localStorage.clear();
         // Redirect user to login page
         push("/login");

@@ -5,10 +5,12 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"question-service/handlers"
 	mymiddleware "question-service/middleware"
+	pb "question-service/proto"
 	"question-service/utils"
 	"time"
 
@@ -19,10 +21,43 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
 	"google.golang.org/api/option"
+	"google.golang.org/grpc"
 )
 
+func main() {
+	// Load .env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	// Initialize Firestore client
+	ctx := context.Background()
+	client, err := initFirestore(ctx)
+	if err != nil {
+		log.Fatalf("Failed to initialize Firestore client: %v", err)
+	}
+	defer client.Close()
+
+	service := &handlers.Service{Client: client}
+
+	// Check flags if should populate instead.
+	shouldPopulate := flag.Bool("populate", false, "Populate database")
+	flag.Parse()
+	if *shouldPopulate {
+		utils.Populate(client, true)
+		return
+	}
+
+	go initGrpcServer(service)
+
+	r := initChiRouter(service)
+	initRestServer(r)
+}
+
 // initFirestore initializes the Firestore client
-func initFirestore(ctx context.Context, credentialsPath string) (*firestore.Client, error) {
+func initFirestore(ctx context.Context) (*firestore.Client, error) {
+	credentialsPath := os.Getenv("FIREBASE_CREDENTIAL_PATH")
 	opt := option.WithCredentialsFile(credentialsPath)
 	app, err := firebase.NewApp(ctx, nil, opt)
 	if err != nil {
@@ -36,33 +71,7 @@ func initFirestore(ctx context.Context, credentialsPath string) (*firestore.Clie
 	return client, nil
 }
 
-func main() {
-	// Load .env file
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
-	// Initialize Firestore client
-	ctx := context.Background()
-	firebaseCredentialPath := os.Getenv("FIREBASE_CREDENTIAL_PATH")
-	client, err := initFirestore(ctx, firebaseCredentialPath)
-	if err != nil {
-		log.Fatalf("Failed to initialize Firestore client: %v", err)
-	}
-	defer client.Close()
-
-	service := &handlers.Service{Client: client}
-
-	// Check flags if should populate instead.
-	shouldPopulate := flag.Bool("populate", false, "Populate database")
-	flag.Parse()
-	if *shouldPopulate {
-		utils.Populate(client)
-		return
-	}
-
-	// Set up chi router
+func initChiRouter(service *handlers.Service) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.Timeout(60 * time.Second))
@@ -79,7 +88,12 @@ func main() {
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
 
-	// Register routes
+	registerRoutes(r, service)
+
+	return r
+}
+
+func registerRoutes(r *chi.Mux, service *handlers.Service) {
 	r.Route("/questions", func(r chi.Router) {
 		r.Get("/", service.ListQuestions)
 		r.Post("/", service.CreateQuestion)
@@ -90,7 +104,9 @@ func main() {
 			r.Delete("/", service.DeleteQuestion)
 		})
 	})
+}
 
+func initRestServer(r *chi.Mux) {
 	// Serve on port 8080
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -98,9 +114,25 @@ func main() {
 	}
 
 	// Start the server
-	log.Printf("Starting server on http://localhost:%s", port)
-	err = http.ListenAndServe(fmt.Sprintf(":%s", port), r)
+	log.Printf("Starting REST server on http://localhost:%s", port)
+	err := http.ListenAndServe(fmt.Sprintf(":%s", port), r)
 	if err != nil {
 		log.Fatalf("Failed to start server: %v", err)
+	}
+}
+
+func initGrpcServer(service *handlers.Service) {
+	lis, err := net.Listen("tcp", ":50051")
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	s := grpc.NewServer()
+	pb.RegisterQuestionMatchingServiceServer(s, &handlers.GrpcServer{
+		Client: service.Client,
+	})
+
+	log.Printf("gRPC Server is listening on port 50051...")
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
 	}
 }

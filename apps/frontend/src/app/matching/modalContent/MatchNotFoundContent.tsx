@@ -3,13 +3,14 @@ import 'typeface-montserrat';
 import './styles.scss';
 import { handleReselectMatchOptions, handleRetryMatch } from '../handlers';
 import { formatTime } from '@/utils/DateTime';
+import { Button, Form } from 'antd';
+import { MatchParams } from '../MatchingModal';
 
 const MatchNotFoundContent: React.FC<{
-    retry(): void,
     reselect(): void,
     timedOutIn: number,
 }> = ({
-    retry, reselect, timedOutIn
+    reselect, timedOutIn
 }) => {
     return (
         <div className="joined-match-content">
@@ -28,11 +29,11 @@ const MatchNotFoundContent: React.FC<{
             <div className="match-status-message">
                 Sorry, we could not find a match after {formatTime(timedOutIn)}
             </div>
-            {/* <button className="retry-match-button"
-                onClick={retry}
-            >
-                Retry
-            </button> */}
+            <Form.Item<MatchParams> noStyle>
+                <button className="retry-match-button" type="submit">
+                    Retry
+                </button>
+            </Form.Item>
             <button className="reselect-match-options-button"
                 onClick={reselect}
             >

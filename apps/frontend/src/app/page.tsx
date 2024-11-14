@@ -14,13 +14,13 @@ const HomePage = () => {
 
   const closeMatchingModal = () => {
     setMatchingModalOpen(false);
-  }
+  };
 
   return (
     <Layout className="layout">
       <Header selectedKey={undefined} />
       <Content className="content">
-        <MatchingModal isOpen={matchingModalOpen} close={closeMatchingModal}/>
+        <MatchingModal isOpen={matchingModalOpen} close={closeMatchingModal} />
         <div className="home-content-card">
           <div className="left-panel">
             <div className="logo-container">
@@ -28,10 +28,10 @@ const HomePage = () => {
               <div className="logo2-title">Prep</div>
             </div>
             <div className="slogan">
-              <text className="slogan-1">
+              <span className="slogan-1">
                 A better way to prepare for coding interviews with
-              </text>
-              <text className="slogan-2"> peers</text>
+              </span>
+              <span className="slogan-2"> peers</span>
             </div>
             <div className="button-container">
               <Button

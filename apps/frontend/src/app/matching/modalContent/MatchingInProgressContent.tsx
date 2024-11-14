@@ -6,18 +6,12 @@ import { handleCancelMatch } from '../handlers';
 import { useTimer } from "react-timer-hook"
 import {formatTime} from '@/utils/DateTime';
 
-const TIMEOUT = 10;
-
 interface Props {
-    cancelMatch(cancelledIn: number): void
-    timeout(timeoutIn: number): void
+    cancelMatch(): void
+    timePassed: number
 }
 
-const MatchingInProgressContent: React.FC<Props> = ({cancelMatch: cancel, timeout}) => {
-    const { totalSeconds } = useTimer({
-        expiryTimestamp: new Date(Date.now() + 10 * 1000),
-        onExpire: () => timeout(TIMEOUT - totalSeconds),
-    });
+const MatchingInProgressContent: React.FC<Props> = ({cancelMatch: cancel, timePassed}) => {
 
     return (
         <div className="matching-in-progess-content">
@@ -25,11 +19,11 @@ const MatchingInProgressContent: React.FC<Props> = ({cancelMatch: cancel, timeou
             <div className="match-status-label">Matching in Progress</div>
             <div className="match-status-message">
                 Please be patient as we match you with other online users<br/><br/>
-                {formatTime(TIMEOUT - totalSeconds)}
+                {formatTime(timePassed)}
             </div>
             <button className="cancel-match-button"
                 onClick={() => {
-                    cancel(TIMEOUT - totalSeconds);
+                    cancel();
                 }}
             >
                 Cancel

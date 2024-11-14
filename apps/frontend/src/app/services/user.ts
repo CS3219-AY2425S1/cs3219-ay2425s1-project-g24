@@ -1,3 +1,7 @@
+"use client";
+
+import { getToken } from "./login-store";
+
 const USER_SERVICE_URL = process.env.NEXT_PUBLIC_USER_SERVICE_URL;
 
 export interface User {
@@ -91,7 +95,7 @@ export const UpdateUser = async (
   user: UpdateUserRequestType,
   id: string
 ): Promise<UpdateUserResponseType> => {
-  const JWT_TOKEN = localStorage.getItem("TOKEN") ?? undefined;
+  const JWT_TOKEN = getToken();
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_USER_SERVICE_URL}users/${id}`,
     {
@@ -116,7 +120,7 @@ export const UpdateUser = async (
 };
 
 export const ValidateUser = async (): Promise<VerifyTokenResponseType> => {
-  const JWT_TOKEN = localStorage.getItem("TOKEN") ?? undefined;
+  const JWT_TOKEN = getToken();
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_USER_SERVICE_URL}auth/verify-token`,
     {

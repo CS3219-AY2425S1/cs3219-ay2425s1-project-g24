@@ -227,3 +227,12 @@ button:disabled, .joined-match-deactivated-button {
   height: 60px; 
   fill: #463F3A;
 }
+
+.user-caption {
+  display: flex;
+  justify-content: center;
+}
+
+.avatar-caption-container {
+  width: 64px;
+}

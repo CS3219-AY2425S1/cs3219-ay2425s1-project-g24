@@ -9,18 +9,22 @@ import 'typeface-montserrat';
 import './styles.scss';
 import { handleCancelMatch } from '../handlers';
 import { formatTime } from '@/utils/DateTime';
+import { useStopwatch } from 'react-timer-hook';
 
 
 interface Props {
-    cancel(): void
-    name1: string, // user's username
-    name2: string, // matched user's username
+  cancel(): void;
+  name1: string; // user's username
+  name2: string; // matched user's username
 }
 
 const JoinedMatchContent: React.FC<Props> = ({cancel, name1: me, name2: you}) => {
     const matchAlreadyJoined = () => {
         throw new Error('Match already joined.');
     }
+    const { totalSeconds } = useStopwatch({
+        autoStart: true
+    })
 
     return (
         <div className="joined-match-content">
@@ -45,20 +49,15 @@ const JoinedMatchContent: React.FC<Props> = ({cancel, name1: me, name2: you}) =>
             </div>
             <div className="match-status-label">Match Found!</div>
             <div className="match-status-message">
-                Waiting for others... {formatTime(83)}
+                Waiting for others... {formatTime(totalSeconds)}
             </div>
             <button className="joined-match-deactivated-button" 
                 disabled
             >
                 Joined
             </button>
-            <button className="cancel-match-button"
-                onClick={cancel}
-            >
-                Cancel
-            </button>
         </div>
-    )
-}
+    );
+};
 
 export default JoinedMatchContent;

@@ -1,11 +1,27 @@
-This is the frontend for the question service.
+# Frontend
 
-## Tech Stack
+![Home page](../../docs/home_page.png)
 
-- Next.js
-- TypeScript
-- Ant Design
-- SCSS
+### Tech Stack
+
+- React: React is one of the most popular UI libraries that allows the creation of reusable UI functional components. Its community ecosystem also offers React hooks that simplify the implementation of some of our frontend components, such as websockets.
+- Next.js: A React framework for building single-page applications. It comes with several useful features such as automatic page routing based on filesystem.
+- Ant Design: An enterprise-level design system that comes with several extensible UI components and solutions out-of-the-box, which allows us to quickly create nice-looking components that can be adjusted according to our requirements.
+- Typescript: A language extension of Javascript that allows us to perform static type-checking, to ensure that issues with incorrectly used types are caught and resolved as early as possible, improving code maintainability.
+
+### Authorization-based Route Protection with Next.js Middleware
+
+Middleware is a Next.js feature that allows the webpage server to intercept page requests and perform checks before serving the webpage. We used this feature to protect page access from unauthenticated users. This was done by checking the request’s JWT token (passed as a cookie) against the user service and redirecting users without authorized access to a public route (namely, the login page).
+
+### User Flow and Communication between Microservices
+
+Clients interact with the microservices through dedicated endpoints, with each microservice managing its own database for independent reading and writing.
+
+Having individual databases per microservice improves data security, scalability, fault isolation, flexibility in database choice, and development efficiency. This approach allows each microservice to operate independently, optimizing stability, performance, and adaptability in the system.
+
+![Diagram for user flow and communication between microservices](../../docs/userflow.png)
+
+---
 
 ## Getting Started
 
