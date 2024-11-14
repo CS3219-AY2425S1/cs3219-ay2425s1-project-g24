@@ -32,7 +32,7 @@ import { ExecutionResults, SubmissionResults } from "@/app/services/execute";
 interface CollaborativeEditorProps {
   user: string;
   collaborationId: string;
-  language: string;
+  updateLanguage: (language: string) => void;
   setMatchedUser: Dispatch<SetStateAction<string>>;
   handleCloseCollaboration: (type: string) => void;
   providerRef: MutableRefObject<WebrtcProvider | null>;
@@ -203,6 +203,7 @@ const CollaborativeEditor = forwardRef(
           language: selectedLanguage,
           id: latestLanguageChangeId,
         });
+        props.updateLanguage(selectedLanguage);
         success(`Changed Code Editor's language to ${selectedLanguage}`);
       } else {
         setMounted(true);
@@ -385,11 +386,14 @@ const CollaborativeEditor = forwardRef(
         extensions: [
           basicSetup,
           languageConf.of(python()),
-          // languageConf.of(javascript()),
+          // languageConf.of(node()),
           autoLanguage,
           yCollab(ytext, provider.awareness, { undoManager }),
           keymap.of([indentWithTab]),
           codeChangeListener,
+          EditorView.theme({
+            "&": { height: "100%", overflow: "hidden" }, // Enable Scroll
+          }),
         ],
       });
 

@@ -71,7 +71,7 @@ export default function CollaborationPage(props: CollaborationProps) {
   const [complexity, setComplexity] = useState<string | undefined>(undefined);
   const [categories, setCategories] = useState<string[]>([]); // Store the selected filter categories
   const [description, setDescription] = useState<string | undefined>(undefined);
-  const [selectedLanguage, setSelectedLanguage] = useState("Python"); // State to hold the selected language item
+  const [selectedLanguage, setSelectedLanguage] = useState("python"); // State to hold the selected language item
 
   // Session states
   const [collaborationId, setCollaborationId] = useState<string | undefined>(
@@ -231,6 +231,10 @@ export default function CollaborationPage(props: CollaborationProps) {
     setVisibleTestCases(data.visibleTestResults);
     localStorage.setItem("visibleTestResults", JSON.stringify(data.visibleTestResults));
   };
+
+  const updateLangauge = (data: string) => {
+    setSelectedLanguage(data);
+  }
 
   const handleRunTestCases = async () => {
     if (!questionDocRefId) {
@@ -511,7 +515,7 @@ export default function CollaborationPage(props: CollaborationProps) {
                     ref={editorRef}
                     user={currentUser}
                     collaborationId={collaborationId}
-                    language={selectedLanguage}
+                    updateLanguage={updateLangauge}
                     setMatchedUser={setMatchedUser}
                     handleCloseCollaboration={handleCloseCollaboration}
                     providerRef={providerRef}
