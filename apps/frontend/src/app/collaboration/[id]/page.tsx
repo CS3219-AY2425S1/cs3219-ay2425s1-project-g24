@@ -500,6 +500,9 @@ export default function CollaborationPage(props: CollaborationProps) {
                     <div className="spinner-container">
                       {isLoadingSubmission && <Spin tip="Saving code..." />}
                     </div>
+                    <Tooltip title="Submit will run public and hidden test cases before submitting">
+                      <InfoCircleFilled className="submit-code" />
+                    </Tooltip>
                     <Button
                       icon={<SendOutlined />}
                       iconPosition="end"
