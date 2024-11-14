@@ -391,6 +391,9 @@ const CollaborativeEditor = forwardRef(
           yCollab(ytext, provider.awareness, { undoManager }),
           keymap.of([indentWithTab]),
           codeChangeListener,
+          EditorView.theme({
+            "&": { height: "100%", overflow: "hidden" }, // Enable Scroll
+          }),
         ],
       });
 
