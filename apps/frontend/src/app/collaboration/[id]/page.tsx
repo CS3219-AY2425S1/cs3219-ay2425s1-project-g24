@@ -249,7 +249,7 @@ export default function CollaborationPage(props: CollaborationProps) {
         customTestCases: "",
       });
       updateExecutionResults(data);
-      infoMessage("Test cases executed. Review the results below.");
+      successMessage("Test cases executed. Review the results below.");
       sendExecutionResultsToMatchedUser(data);
     } finally {
       setIsLoadingTestCase(false);
@@ -500,6 +500,9 @@ export default function CollaborationPage(props: CollaborationProps) {
                     <div className="spinner-container">
                       {isLoadingSubmission && <Spin tip="Saving code..." />}
                     </div>
+                    <Tooltip title="Submit will run public and hidden test cases before submitting">
+                      <InfoCircleFilled className="submit-code" />
+                    </Tooltip>
                     <Button
                       icon={<SendOutlined />}
                       iconPosition="end"

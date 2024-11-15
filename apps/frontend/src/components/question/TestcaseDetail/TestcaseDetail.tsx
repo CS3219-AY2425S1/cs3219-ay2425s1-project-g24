@@ -3,7 +3,7 @@ import {
   InfoCircleFilled,
   PlayCircleOutlined,
 } from "@ant-design/icons";
-import { Button, Input, Spin, Tabs, TabsProps, Typography } from "antd";
+import { Button, Input, Spin, Tabs, TabsProps, Tooltip, Typography } from "antd";
 import "./styles.scss";
 import { isTestResult, Test } from "@/app/services/execute";
 
@@ -100,6 +100,9 @@ export const TestcaseDetail = (props: TestcaseDetailProps) => {
             <div className="spinner-container">
               {props.isLoadingTestCase && <Spin tip="Running test cases..." />}
             </div>
+            <Tooltip title="Run test cases will run public test cases">
+              <InfoCircleFilled className="run-test-cases-info" />
+            </Tooltip>
             <Button
               icon={<PlayCircleOutlined />}
               iconPosition="end"
